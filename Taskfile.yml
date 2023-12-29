@@ -27,8 +27,7 @@ tasks:
 
   clean:
     cmds:
-      - 'rm -fr .task visref node_modules'
-      - "find resources/assets -mindepth 1 ! -name '*.svg' -delete"
+      - 'rm -fr .task visref node_modules resources/assets'
     desc: 'Delete all buildable files, caches, and third-party dependencies'
 
   build:
