@@ -6,16 +6,22 @@ package main
 
 import (
 	"net/http"
-
-	"github.com/alexedwards/flow"
 )
 
 func (app *application) routes() http.Handler {
-	mux := flow.New()
+	mux := http.NewServeMux()
 
-	mux.NotFound = http.HandlerFunc(app.notFound)
+	mux.Handle("GET /media", http.RedirectHandler("/", http.StatusFound))
 
-	mux.HandleFunc("/", app.home, "GET")
+	mux.HandleFunc("GET /{$}", app.mediaIndex)
+	mux.HandleFunc("GET /media/add", app.mediaAdd)
+	mux.HandleFunc("GET /media/{id}", app.mediaShow)
+	mux.HandleFunc("GET /media/{id}/edit", app.mediaEdit)
+
+	mux.HandleFunc("GET /tags", app.tagsIndex)
+	mux.HandleFunc("GET /tags/add", app.tagsAdd)
+	mux.HandleFunc("GET /tags/{tag}", app.tagsShow)
+	mux.HandleFunc("GET /tags/{tag}/edit", app.tagsEdit)
 
 	return mux
 }
