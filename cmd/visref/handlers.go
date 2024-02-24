@@ -17,10 +17,6 @@ func (app *application) mediaIndex(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "mediaIndex")
 }
 
-func (app *application) mediaEdit(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "mediaEdit: %v", r.PathValue("id"))
-}
-
 func (app *application) mediaShow(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "mediaShow: %v", r.PathValue("id"))
 }
@@ -31,10 +27,6 @@ func (app *application) tagsAdd(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) tagsIndex(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "tagsIndex")
-}
-
-func (app *application) tagsEdit(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "tagsEdit: %v", r.PathValue("tag"))
 }
 
 func (app *application) tagsShow(w http.ResponseWriter, r *http.Request) {
