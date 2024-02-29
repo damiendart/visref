@@ -14,6 +14,7 @@ import (
 type application struct {
 	config config
 	logger *slog.Logger
+	views  *Views
 }
 
 type config struct {
@@ -40,9 +41,15 @@ func run(logger *slog.Logger) error {
 
 	flag.Parse()
 
+	templateCache, err := NewTemplateCache()
+	if err != nil {
+		return err
+	}
+
 	app := &application{
 		config: cfg,
 		logger: logger,
+		views:  NewViews(templateCache),
 	}
 
 	return app.serveHTTP()

@@ -1,0 +1,23 @@
+{{/*
+  Copyright (C) Damien Dart, <damiendart@pobox.com>.
+  This file is distributed under the MIT licence. For more information,
+  please refer to the accompanying "LICENCE" file.
+*/}}
+
+{{ define "base" }}
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>visref</title>
+  </head>
+  <body>
+    <header>
+      <p><a href="/">visref</a></p>
+      <hr>
+    </header>
+    {{ template "main" . }}
+  </body>
+  </html>
+{{ end }}

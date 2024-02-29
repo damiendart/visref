@@ -14,7 +14,7 @@ func (app *application) mediaAdd(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) mediaIndex(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "mediaIndex")
+	app.views.renderIndex(w)
 }
 
 func (app *application) mediaShow(w http.ResponseWriter, r *http.Request) {

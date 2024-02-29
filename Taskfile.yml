@@ -62,6 +62,7 @@ tasks:
     desc: 'Build the "visref" application'
     sources:
       - '**/*.go'
+      - '**/*.gohtml'
       - 'go.mod'
       - 'go.sum'
 
