@@ -6,20 +6,24 @@ package main
 
 import (
 	"net/http"
+
+	"github.com/damiendart/visref/internal/httputil"
 )
 
 func (app *application) routes() http.Handler {
-	mux := http.NewServeMux()
+	mux := httputil.NewRouter()
+
+	mux.Use(DefaultHeaders)
 
 	mux.Handle("GET /media", http.RedirectHandler("/", http.StatusFound))
 
-	mux.HandleFunc("GET /{$}", app.mediaIndex)
-	mux.HandleFunc("GET /media/add", app.mediaAdd)
-	mux.HandleFunc("GET /media/{id}", app.mediaShow)
+	mux.Handle("GET /{$}", app.mediaIndexHandler())
+	mux.Handle("GET /media/add", app.mediaAddHandler())
+	mux.Handle("GET /media/{id}", app.mediaShowHandler())
 
-	mux.HandleFunc("GET /tags", app.tagsIndex)
-	mux.HandleFunc("GET /tags/add", app.tagsAdd)
-	mux.HandleFunc("GET /tags/{tag}", app.tagsShow)
+	mux.Handle("GET /tags", app.tagsIndexHandler())
+	mux.Handle("GET /tags/add", app.tagsAddHandler())
+	mux.Handle("GET /tags/{tag}", app.tagsShowHandler())
 
 	return mux
 }

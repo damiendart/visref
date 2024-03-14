@@ -5,30 +5,53 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/damiendart/visref/internal/httputil"
 )
 
-func (app *application) mediaAdd(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "mediaAdd")
+func (app *application) mediaAddHandler() http.Handler {
+	return httputil.Text("mediaAdd")
 }
 
-func (app *application) mediaIndex(w http.ResponseWriter, r *http.Request) {
-	app.views.renderIndex(w)
+func (app *application) mediaIndexHandler() http.Handler {
+	return httputil.ComposableHandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) http.Handler {
+			t, ok := app.templateCache["index.gohtml"]
+			if !ok {
+				return httputil.Error(
+					errors.New("template index.gohtml does not exist"),
+					http.StatusInternalServerError,
+				)
+			}
+
+			return httputil.Template(*t, "base", nil)
+		},
+	)
 }
 
-func (app *application) mediaShow(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "mediaShow: %v", r.PathValue("id"))
+func (app *application) mediaShowHandler() http.Handler {
+	return httputil.ComposableHandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) http.Handler {
+			return httputil.Text(fmt.Sprintf("mediaShow: %v", r.PathValue("id")))
+		},
+	)
 }
 
-func (app *application) tagsAdd(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "tagsAdd")
+func (app *application) tagsAddHandler() http.Handler {
+	return httputil.Text("tagsAdd")
 }
 
-func (app *application) tagsIndex(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "tagsIndex")
+func (app *application) tagsIndexHandler() http.Handler {
+	return httputil.Text("tagsIndex")
 }
 
-func (app *application) tagsShow(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "tagsShow: %v", r.PathValue("tag"))
+func (app *application) tagsShowHandler() http.Handler {
+	return httputil.ComposableHandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) http.Handler {
+			return httputil.Text(fmt.Sprintf("tagsShow: %v", r.PathValue("tag")))
+		},
+	)
 }

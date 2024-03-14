@@ -12,9 +12,9 @@ import (
 )
 
 type application struct {
-	config config
-	logger *slog.Logger
-	views  *Views
+	config        config
+	logger        *slog.Logger
+	templateCache TemplateCache
 }
 
 type config struct {
@@ -47,9 +47,9 @@ func run(logger *slog.Logger) error {
 	}
 
 	app := &application{
-		config: cfg,
-		logger: logger,
-		views:  NewViews(templateCache),
+		config:        cfg,
+		logger:        logger,
+		templateCache: templateCache,
 	}
 
 	return app.serveHTTP()
