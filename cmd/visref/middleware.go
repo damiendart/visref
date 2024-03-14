@@ -6,7 +6,8 @@ package main
 
 import "net/http"
 
-// DefaultHeaders is a middleware function that add common HTTP headers.
+// DefaultHeaders is an HTTP middleware function that adds a few common
+// HTTP headers that apply to all requests.
 func DefaultHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
