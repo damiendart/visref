@@ -18,6 +18,7 @@ func (app *application) routes() http.Handler {
 	mux.Handle("GET /media", http.RedirectHandler("/", http.StatusFound))
 
 	mux.Handle("GET /{$}", app.mediaIndexHandler())
+	mux.Handle("GET /assets/", http.FileServer(http.FS(resources)))
 	mux.Handle("GET /media/add", app.mediaAddHandler())
 	mux.Handle("GET /media/{id}", app.mediaShowHandler())
 

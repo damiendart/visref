@@ -42,7 +42,7 @@ tasks:
     sources:
       - 'resources/sass/**/*.scss'
     vars:
-      OUTPUT_FILE: 'resources/assets/style.css'
+      OUTPUT_FILE: 'cmd/visref/assets/style.css'
 
   build:javascript:
     cmds:
@@ -51,7 +51,7 @@ tasks:
     sources:
       - 'resources/javascript/**/*.js'
     vars:
-      OUTPUT_FILE: 'resources/assets/app.js'
+      OUTPUT_FILE: 'cmd/visref/assets/app.js'
 
   build:go:
     cmds:
@@ -65,6 +65,7 @@ tasks:
       - '**/*.gohtml'
       - 'go.mod'
       - 'go.sum'
+      - 'cmd/visref/assets/favicon.svg'
 
   dependencies:
     cmds:

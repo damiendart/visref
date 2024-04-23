@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 )
 
-//go:embed templates
-var assets embed.FS
+//go:embed assets templates
+var resources embed.FS
 
 // TemplateCache is an in-memory map of parsed templates.
 type TemplateCache map[string]*template.Template
@@ -21,7 +21,7 @@ type TemplateCache map[string]*template.Template
 func NewTemplateCache() (TemplateCache, error) {
 	cache := TemplateCache{}
 
-	templates, err := fs.Glob(assets, "templates/*.gohtml")
+	templates, err := fs.Glob(resources, "templates/*.gohtml")
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func NewTemplateCache() (TemplateCache, error) {
 
 		patterns := []string{"templates/layouts/*.gohtml", t}
 
-		ts, err := template.New(name).ParseFS(assets, patterns...)
+		ts, err := template.New(name).ParseFS(resources, patterns...)
 		if err != nil {
 			return nil, err
 		}
