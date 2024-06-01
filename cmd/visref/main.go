@@ -9,16 +9,20 @@ import (
 	"log/slog"
 	"os"
 	"runtime/debug"
+
+	"github.com/damiendart/visref/internal/sqlite"
 )
 
 type application struct {
 	config        config
+	database      *sqlite.DB
 	logger        *slog.Logger
 	templateCache TemplateCache
 }
 
 type config struct {
 	baseURL  string
+	database string
 	httpPort int
 }
 
@@ -37,6 +41,7 @@ func run(logger *slog.Logger) error {
 	var cfg config
 
 	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
+	flag.StringVar(&cfg.database, "database-path", "visref.db", "relative path to database")
 	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
 
 	flag.Parse()
@@ -46,8 +51,14 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
+	database := sqlite.NewDB(cfg.database, logger)
+	if err = database.Open(); err != nil {
+		return err
+	}
+
 	app := &application{
 		config:        cfg,
+		database:      database,
 		logger:        logger,
 		templateCache: templateCache,
 	}

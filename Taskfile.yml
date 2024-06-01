@@ -60,9 +60,12 @@ tasks:
       - 'build:css'
       - 'build:javascript'
     desc: 'Build the "visref" application'
+    env:
+      CGO_ENABLED: '1'
     sources:
       - '**/*.go'
       - '**/*.gohtml'
+      - '**/*.sql'
       - 'go.mod'
       - 'go.sum'
       - 'cmd/visref/assets/favicon.svg'
