@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"sort"
 
+	// This package is only imported for its side effect of registering
+	// the "sqlite3" driver for use with the "database/sql" package.
 	_ "github.com/mattn/go-sqlite3"
 )
 
