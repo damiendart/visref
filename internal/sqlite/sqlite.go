@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"time"
 
 	// This package is only imported for its side effect of registering
 	// the "sqlite3" driver for use with the "database/sql" package.
@@ -26,6 +28,13 @@ type DB struct {
 	path      string
 	readPool  *sql.DB
 	writePool *sql.DB
+	Now       func() time.Time
+}
+
+// Tx provides a sql.Tx and a transaction start timestamp.
+type Tx struct {
+	*sql.Tx
+	now time.Time
 }
 
 // NewDB returns a new instance of DB.
@@ -34,9 +43,19 @@ func NewDB(path string, logger *slog.Logger) *DB {
 		path = ":memory:"
 	}
 
-	db := &DB{logger: logger, path: path}
+	db := &DB{logger: logger, path: path, Now: time.Now}
 
 	return db
+}
+
+// BeginTx starts a transaction.
+func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
+	tx, err := db.writePool.BeginTx(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Tx{tx, db.Now().UTC().Truncate(time.Second)}, nil
 }
 
 // Open opens reading and writing database connections and executes any

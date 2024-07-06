@@ -6,6 +6,7 @@ package main
 
 import (
 	"flag"
+	"github.com/damiendart/visref/internal/library"
 	"log/slog"
 	"os"
 	"runtime/debug"
@@ -14,10 +15,11 @@ import (
 )
 
 type application struct {
-	config        config
-	database      *sqlite.DB
-	logger        *slog.Logger
-	templateCache TemplateCache
+	config         config
+	database       *sqlite.DB
+	logger         *slog.Logger
+	ItemRepository library.ItemRepository
+	templateCache  TemplateCache
 }
 
 type config struct {
@@ -57,10 +59,11 @@ func run(logger *slog.Logger) error {
 	}
 
 	app := &application{
-		config:        cfg,
-		database:      database,
-		logger:        logger,
-		templateCache: templateCache,
+		config:         cfg,
+		database:       database,
+		logger:         logger,
+		ItemRepository: sqlite.NewItemRepository(database),
+		templateCache:  templateCache,
 	}
 
 	return app.serveHTTP()

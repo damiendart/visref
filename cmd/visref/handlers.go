@@ -7,13 +7,30 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/damiendart/visref/internal/library"
 	"net/http"
 
 	"github.com/damiendart/visref/internal/httputil"
 )
 
 func (app *application) mediaAddHandler() http.Handler {
-	return httputil.Text("mediaAdd")
+	return httputil.ComposableHandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) http.Handler {
+			m := library.Item{Title: "Test"}
+
+			err := app.ItemRepository.Create(r.Context(), &m)
+			if err != nil {
+				return httputil.Error(
+					errors.New("oh no"),
+					http.StatusInternalServerError,
+				)
+			}
+
+			return httputil.Text(
+				fmt.Sprintf("test library item %q created", m.ID),
+			)
+		},
+	)
 }
 
 func (app *application) mediaIndexHandler() http.Handler {
