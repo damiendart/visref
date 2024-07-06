@@ -15,12 +15,12 @@ func (app *application) routes() http.Handler {
 
 	mux.Use(DefaultHeaders)
 
-	mux.Handle("GET /media", http.RedirectHandler("/", http.StatusFound))
+	mux.Handle("GET /items", http.RedirectHandler("/", http.StatusFound))
 
-	mux.Handle("GET /{$}", app.mediaIndexHandler())
+	mux.Handle("GET /{$}", app.itemsIndexHandler())
 	mux.Handle("GET /assets/", http.FileServer(http.FS(resources)))
-	mux.Handle("GET /media/add", app.mediaAddHandler())
-	mux.Handle("GET /media/{id}", app.mediaShowHandler())
+	mux.Handle("GET /items/add", app.itemsAddHandler())
+	mux.Handle("GET /items/{id}", app.itemsShowHandler())
 
 	mux.Handle("GET /tags", app.tagsIndexHandler())
 	mux.Handle("GET /tags/add", app.tagsAddHandler())

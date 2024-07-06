@@ -13,7 +13,7 @@ import (
 	"github.com/damiendart/visref/internal/httputil"
 )
 
-func (app *application) mediaAddHandler() http.Handler {
+func (app *application) itemsAddHandler() http.Handler {
 	return httputil.ComposableHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) http.Handler {
 			m := library.Item{Title: "Test"}
@@ -33,7 +33,7 @@ func (app *application) mediaAddHandler() http.Handler {
 	)
 }
 
-func (app *application) mediaIndexHandler() http.Handler {
+func (app *application) itemsIndexHandler() http.Handler {
 	return httputil.ComposableHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) http.Handler {
 			t, ok := app.templateCache["index.gohtml"]
@@ -49,10 +49,10 @@ func (app *application) mediaIndexHandler() http.Handler {
 	)
 }
 
-func (app *application) mediaShowHandler() http.Handler {
+func (app *application) itemsShowHandler() http.Handler {
 	return httputil.ComposableHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) http.Handler {
-			return httputil.Text(fmt.Sprintf("mediaShow: %v", r.PathValue("id")))
+			return httputil.Text(fmt.Sprintf("itemsShow: %v", r.PathValue("id")))
 		},
 	)
 }

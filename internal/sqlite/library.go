@@ -33,7 +33,7 @@ func (s *ItemRepository) Create(ctx context.Context, item *library.Item) error {
 
 	_, err = tx.ExecContext(
 		ctx,
-		`INSERT INTO media (id, title, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
+		`INSERT INTO items (id, title, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
 		u,
 		item.Title,
 		item.Description,

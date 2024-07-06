@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS media (
+CREATE TABLE IF NOT EXISTS items (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
@@ -6,4 +6,4 @@ CREATE TABLE IF NOT EXISTS media (
   updated_at TEXT NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_media_title ON media(title);
+CREATE INDEX IF NOT EXISTS idx_items_title ON items(title);
