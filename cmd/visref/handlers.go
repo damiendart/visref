@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/damiendart/visref/internal/library"
+	"github.com/google/uuid"
 	"net/http"
 
 	"github.com/damiendart/visref/internal/httputil"
@@ -52,7 +53,20 @@ func (app *application) itemsIndexHandler() http.Handler {
 func (app *application) itemsShowHandler() http.Handler {
 	return httputil.ComposableHandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) http.Handler {
-			return httputil.Text(fmt.Sprintf("itemsShow: %v", r.PathValue("id")))
+			id, err := uuid.Parse(r.PathValue("id"))
+			if err != nil {
+				return httputil.Error(errors.New("not found"), http.StatusNotFound)
+			}
+
+			item, err := app.ItemRepository.Get(r.Context(), id)
+			if err != nil {
+				return httputil.Error(
+					err,
+					http.StatusInternalServerError,
+				)
+			}
+
+			return httputil.Text(fmt.Sprintf("itemsShow: %v", item))
 		},
 	)
 }

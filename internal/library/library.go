@@ -19,4 +19,5 @@ type Item struct {
 // storing, retrieving, and deleting visual reference library items.
 type ItemRepository interface {
 	Create(ctx context.Context, item *Item) error
+	Get(ctx context.Context, id uuid.UUID) (*Item, error)
 }

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
 	"github.com/damiendart/visref/internal/library"
 	"github.com/google/uuid"
 )
@@ -18,8 +19,8 @@ func NewItemRepository(db *DB) *ItemRepository {
 }
 
 // Create stores a new library.Item in the database.
-func (s *ItemRepository) Create(ctx context.Context, item *library.Item) error {
-	tx, err := s.db.BeginTx(ctx, nil)
+func (r *ItemRepository) Create(ctx context.Context, item *library.Item) error {
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -37,8 +38,8 @@ func (s *ItemRepository) Create(ctx context.Context, item *library.Item) error {
 		u,
 		item.Title,
 		item.Description,
-		now,
-		now,
+		(*NullTime)(&now),
+		(*NullTime)(&now),
 	)
 	if err != nil {
 		return err
@@ -59,4 +60,46 @@ func (s *ItemRepository) Create(ctx context.Context, item *library.Item) error {
 	item.UpdatedAt = now
 
 	return nil
+}
+
+// Get retrieves a library.Item from the database.
+func (r *ItemRepository) Get(ctx context.Context, id uuid.UUID) (*library.Item, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, `SELECT id, title, description, created_at, updated_at FROM items WHERE id = ?`, id.String())
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]*library.Item, 0)
+
+	for rows.Next() {
+		var item library.Item
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.Title,
+			&item.Description,
+			(*NullTime)(&item.CreatedAt),
+			(*NullTime)(&item.UpdatedAt),
+		); err != nil {
+			return nil, err
+		}
+
+		items = append(items, &item)
+	}
+
+	err = rows.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(items) == 0 {
+		return nil, fmt.Errorf("unable to find item %q", id)
+	}
+
+	return items[0], nil
 }
