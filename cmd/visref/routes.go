@@ -13,7 +13,7 @@ import (
 func (app *application) routes() http.Handler {
 	mux := httputil.NewRouter()
 
-	mux.Use(DefaultHeaders)
+	mux.Use(DefaultHeaders, app.logRequest)
 
 	mux.Handle("GET /items", http.RedirectHandler("/", http.StatusFound))
 
