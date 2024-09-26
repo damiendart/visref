@@ -18,6 +18,12 @@ func NewRouter() *Router {
 	return &Router{mux: http.NewServeMux()}
 }
 
+// Group groups routes within in a Router, allowing middleware to be
+// registered for only those routes.
+func (router *Router) Group(fn func(Router)) {
+	fn(*router)
+}
+
 // Handle registers the handler for the given pattern, wrapping the
 // handler with middleware functions. Middleware functions are applied
 // so that they are called in the order they were registered.
