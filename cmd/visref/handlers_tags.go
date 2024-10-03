@@ -6,22 +6,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/damiendart/visref/internal/httputil"
 	"net/http"
 )
 
-func (app *application) tagsAddHandler() http.Handler {
-	return httputil.Text("tagsAdd")
+func (app *application) tagsAddHandler(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, "tagsAdd")
 }
 
-func (app *application) tagsIndexHandler() http.Handler {
-	return httputil.Text("tagsIndex")
+func (app *application) tagsIndexHandler(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, "tagsIndex")
 }
 
-func (app *application) tagsShowHandler() http.Handler {
-	return httputil.ComposableHandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) http.Handler {
-			return httputil.Text(fmt.Sprintf("tagsShow: %v", r.PathValue("tag")))
-		},
-	)
+func (app *application) tagsShowHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "tagsShow: %v", r.PathValue("tag"))
 }

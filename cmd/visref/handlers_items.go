@@ -5,9 +5,7 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"github.com/damiendart/visref/internal/httputil"
 	"github.com/damiendart/visref/internal/library"
 	"github.com/damiendart/visref/internal/validator"
 	"github.com/google/uuid"
@@ -62,23 +60,18 @@ func (app *application) itemsIndexHandler(w http.ResponseWriter, _ *http.Request
 	app.render(w, http.StatusOK, "index.gohtml", nil)
 }
 
-func (app *application) itemsShowHandler() http.Handler {
-	return httputil.ComposableHandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) http.Handler {
-			id, err := uuid.Parse(r.PathValue("id"))
-			if err != nil {
-				return httputil.Error(errors.New("not found"), http.StatusNotFound)
-			}
+func (app *application) itemsShowHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
 
-			item, err := app.ItemRepository.Get(r.Context(), id)
-			if err != nil {
-				return httputil.Error(
-					err,
-					http.StatusInternalServerError,
-				)
-			}
+	item, err := app.ItemRepository.Get(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-			return httputil.Text(fmt.Sprintf("itemsShow: %v", item))
-		},
-	)
+	fmt.Fprintf(w, "itemsShow: %v", item)
 }
