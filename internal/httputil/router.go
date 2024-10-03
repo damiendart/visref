@@ -25,10 +25,15 @@ func (router *Router) Group(fn func(Router)) {
 }
 
 // Handle registers the handler for the given pattern, wrapping the
-// handler with middleware functions. Middleware functions are applied
-// so that they are called in the order they were registered.
+// handler with middleware functions.
 func (router *Router) Handle(pattern string, handler http.Handler) {
 	router.mux.Handle(pattern, router.wrapMiddleware(handler))
+}
+
+// HandleFunc registers the handler function for the given pattern,
+// wrapping the handler with middleware functions.
+func (router *Router) HandleFunc(pattern string, fn http.HandlerFunc) {
+	router.mux.Handle(pattern, router.wrapMiddleware(fn))
 }
 
 // Use registers the given middleware functions. Middleware functions

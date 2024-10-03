@@ -62,3 +62,14 @@ func Template(t template.Template, name string, p any) ComposableHandlerFunc {
 		return nil
 	}
 }
+
+// WithStatus returns a http.HandlerFunc that sends an HTTP response
+// header with the provided status code with the rest of the output.
+func WithStatus(code int, h http.Handler) http.Handler {
+	return http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(code)
+			h.ServeHTTP(w, r)
+		},
+	)
+}

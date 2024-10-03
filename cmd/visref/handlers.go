@@ -5,84 +5,26 @@
 package main
 
 import (
-	"errors"
+	"bytes"
 	"fmt"
-	"github.com/damiendart/visref/internal/library"
-	"github.com/google/uuid"
 	"net/http"
-
-	"github.com/damiendart/visref/internal/httputil"
 )
 
-func (app *application) itemsAddHandler() http.Handler {
-	return httputil.ComposableHandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) http.Handler {
-			m := library.Item{Title: "Test"}
+func (app *application) render(w http.ResponseWriter, status int, template string, data any) {
+	ts, ok := app.templateCache[template]
+	if !ok {
+		err := fmt.Errorf("the template %q does not exist", template)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-			err := app.ItemRepository.Create(r.Context(), &m)
-			if err != nil {
-				return httputil.Error(
-					errors.New("oh no"),
-					http.StatusInternalServerError,
-				)
-			}
+	buf := new(bytes.Buffer)
+	err := ts.ExecuteTemplate(buf, "base", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-			return httputil.Text(
-				fmt.Sprintf("test library item %q created", m.ID),
-			)
-		},
-	)
-}
-
-func (app *application) itemsIndexHandler() http.Handler {
-	return httputil.ComposableHandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) http.Handler {
-			t, ok := app.templateCache["index.gohtml"]
-			if !ok {
-				return httputil.Error(
-					errors.New("template index.gohtml does not exist"),
-					http.StatusInternalServerError,
-				)
-			}
-
-			return httputil.Template(*t, "base", nil)
-		},
-	)
-}
-
-func (app *application) itemsShowHandler() http.Handler {
-	return httputil.ComposableHandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) http.Handler {
-			id, err := uuid.Parse(r.PathValue("id"))
-			if err != nil {
-				return httputil.Error(errors.New("not found"), http.StatusNotFound)
-			}
-
-			item, err := app.ItemRepository.Get(r.Context(), id)
-			if err != nil {
-				return httputil.Error(
-					err,
-					http.StatusInternalServerError,
-				)
-			}
-
-			return httputil.Text(fmt.Sprintf("itemsShow: %v", item))
-		},
-	)
-}
-
-func (app *application) tagsAddHandler() http.Handler {
-	return httputil.Text("tagsAdd")
-}
-
-func (app *application) tagsIndexHandler() http.Handler {
-	return httputil.Text("tagsIndex")
-}
-
-func (app *application) tagsShowHandler() http.Handler {
-	return httputil.ComposableHandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) http.Handler {
-			return httputil.Text(fmt.Sprintf("tagsShow: %v", r.PathValue("tag")))
-		},
-	)
+	w.WriteHeader(status)
+	buf.WriteTo(w)
 }

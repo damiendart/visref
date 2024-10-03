@@ -15,7 +15,7 @@ func (app *application) routes() http.Handler {
 
 	mux.Use(DefaultHeaders, app.logRequest)
 
-	mux.Handle("GET /{$}", app.itemsIndexHandler())
+	mux.HandleFunc("GET /{$}", app.itemsIndexHandler)
 	mux.Handle("GET /assets/", http.FileServer(http.FS(resources)))
 	mux.Handle("GET /items", http.RedirectHandler("/", http.StatusFound))
 	mux.Handle("GET /items/{id}", app.itemsShowHandler())
@@ -23,8 +23,9 @@ func (app *application) routes() http.Handler {
 	mux.Handle("GET /tags/{tag}", app.tagsShowHandler())
 
 	mux.Group(
-		func (m httputil.Router) {
-			m.Handle("GET /items/add", app.itemsAddHandler())
+		func(m httputil.Router) {
+			m.HandleFunc("GET /items/add", app.itemsAddHandler)
+			m.HandleFunc("POST /items/add", app.itemsAddPostHandler)
 			m.Handle("GET /tags/add", app.tagsAddHandler())
 		},
 	)
