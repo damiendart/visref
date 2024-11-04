@@ -7,13 +7,21 @@
 {{ define "title" }}Add Item{{ end }}
 
 {{ define "main" }}
-  <form action="/items/add" method="post">
+  <form action="/items/add" enctype="multipart/form-data" method="post">
+    <div>
+      <label for="media">Media</label>
+      <input id="media" name="media" type="file">
+      {{ with .Errors.media }}
+        <p>{{ . }}</p>
+      {{ end }}
+    </div>
+
     <div>
       <label for="title">Title</label>
       <input id="title" name="title" type="text" value="{{ .Title }}">
       {{ with .Errors.title }}
         <p>{{ . }}</p>
-      {{ end}}
+      {{ end }}
     </div>
 
     <div>

@@ -6,11 +6,11 @@ package main
 
 import (
 	"flag"
-	"github.com/damiendart/visref/internal/library"
 	"log/slog"
 	"os"
 	"runtime/debug"
 
+	"github.com/damiendart/visref/internal/library"
 	"github.com/damiendart/visref/internal/sqlite"
 )
 
@@ -26,6 +26,7 @@ type config struct {
 	baseURL  string
 	database string
 	httpPort int
+	mediaDir string
 }
 
 func main() {
@@ -45,8 +46,14 @@ func run(logger *slog.Logger) error {
 	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
 	flag.StringVar(&cfg.database, "database-path", "visref.db", "relative path to database")
 	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
+	flag.StringVar(&cfg.mediaDir, "media-dir", "media", "relative path to directory for storing media items")
 
 	flag.Parse()
+
+	err := os.MkdirAll(cfg.mediaDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
 
 	templateCache, err := NewTemplateCache()
 	if err != nil {
@@ -62,7 +69,7 @@ func run(logger *slog.Logger) error {
 		config:         cfg,
 		database:       database,
 		logger:         logger,
-		ItemRepository: sqlite.NewItemRepository(database),
+		ItemRepository: sqlite.NewItemRepository(database, cfg.mediaDir),
 		templateCache:  templateCache,
 	}
 

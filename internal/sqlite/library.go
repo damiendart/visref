@@ -5,21 +5,49 @@ import (
 	"fmt"
 	"github.com/damiendart/visref/internal/library"
 	"github.com/google/uuid"
+	"io"
+	"mime"
+	"os"
+	"path/filepath"
 )
 
 // ItemRepository is an implementation of library.ItemRepository which
 // uses SQLite to store library items.
 type ItemRepository struct {
-	db *DB
+	db       *DB
+	mediaDir string
 }
 
 // NewItemRepository returns a new ItemRepository.
-func NewItemRepository(db *DB) *ItemRepository {
-	return &ItemRepository{db}
+func NewItemRepository(db *DB, mediaDir string) *ItemRepository {
+	return &ItemRepository{db, mediaDir}
 }
 
 // Create stores a new library.Item in the database.
-func (r *ItemRepository) Create(ctx context.Context, item *library.Item) error {
+func (r *ItemRepository) Create(ctx context.Context, item *library.Item, file io.Reader) error {
+	u, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+
+	ext, err := mime.ExtensionsByType(item.MimeType)
+	if err != nil {
+		return err
+	}
+
+	dst, err := os.Create(
+		filepath.Join(r.mediaDir, fmt.Sprintf("%s%s", u.String(), ext[0])),
+	)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		return err
+	}
+
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -27,17 +55,14 @@ func (r *ItemRepository) Create(ctx context.Context, item *library.Item) error {
 
 	now := tx.now
 
-	u, err := uuid.NewV7()
-	if err != nil {
-		return err
-	}
-
 	_, err = tx.ExecContext(
 		ctx,
-		`INSERT INTO items (id, title, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
+		`INSERT INTO items (id, title, description, mime_type, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		u,
 		item.Title,
 		item.Description,
+		item.MimeType,
+		item.OriginalFilename,
 		(*NullTime)(&now),
 		(*NullTime)(&now),
 	)
@@ -69,7 +94,7 @@ func (r *ItemRepository) Get(ctx context.Context, id uuid.UUID) (*library.Item, 
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, `SELECT id, title, description, created_at, updated_at FROM items WHERE id = ?`, id.String())
+	rows, err := tx.QueryContext(ctx, `SELECT id, title, description, mime_type, original_filename, created_at, updated_at FROM items WHERE id = ?`, id.String())
 	if err != nil {
 		return nil, err
 	}
@@ -83,6 +108,8 @@ func (r *ItemRepository) Get(ctx context.Context, id uuid.UUID) (*library.Item, 
 			&item.ID,
 			&item.Title,
 			&item.Description,
+			&item.MimeType,
+			&item.OriginalFilename,
 			(*NullTime)(&item.CreatedAt),
 			(*NullTime)(&item.UpdatedAt),
 		); err != nil {

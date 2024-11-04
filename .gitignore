@@ -5,6 +5,7 @@
 .task/
 cmd/visref/assets/
 !cmd/visref/assets/favicon.svg
+media/
 node_modules/
 *.db
 *.db-*

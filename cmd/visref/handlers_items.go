@@ -6,10 +6,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/google/uuid"
+	"io"
+	"net/http"
+
 	"github.com/damiendart/visref/internal/library"
 	"github.com/damiendart/visref/internal/validator"
-	"github.com/google/uuid"
-	"net/http"
 )
 
 type itemAddForm struct {
@@ -24,15 +26,39 @@ func (app *application) itemsAddHandler(w http.ResponseWriter, _ *http.Request) 
 }
 
 func (app *application) itemsAddPostHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	r.Body = http.MaxBytesReader(w, r.Body, 1024*1024*10)
+
+	err := r.ParseMultipartForm(1024 * 1024 * 10)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	form := itemAddForm{
 		Title:       r.PostForm.Get("title"),
 		Description: r.PostFormValue("description"),
+	}
+
+	file, header, err := r.FormFile("media")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	defer file.Close()
+
+	buf := make([]byte, 512)
+	_, err = file.Read(buf)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	filetype := http.DetectContentType(buf)
+	_, err = file.Seek(0, io.SeekStart)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
@@ -43,11 +69,13 @@ func (app *application) itemsAddPostHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	m := library.Item{
-		Title:       form.Title,
-		Description: form.Description,
+		Title:            form.Title,
+		Description:      form.Description,
+		MimeType:         filetype,
+		OriginalFilename: header.Filename,
 	}
 
-	err = app.ItemRepository.Create(r.Context(), &m)
+	err = app.ItemRepository.Create(r.Context(), &m, file)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
