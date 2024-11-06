@@ -17,7 +17,6 @@ import (
 type itemAddForm struct {
 	Title       string
 	Description string
-
 	validator.Validator
 }
 
@@ -63,7 +62,7 @@ func (app *application) itemsAddPostHandler(w http.ResponseWriter, r *http.Reque
 
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
 
-	if !form.Valid() {
+	if form.HasErrors() {
 		app.render(w, http.StatusUnprocessableEntity, "items_add.gohtml", form)
 		return
 	}

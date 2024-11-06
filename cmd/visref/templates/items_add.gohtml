@@ -11,7 +11,7 @@
     <div>
       <label for="media">Media</label>
       <input id="media" name="media" type="file">
-      {{ with .Errors.media }}
+      {{ with .FieldErrors.media }}
         <p>{{ . }}</p>
       {{ end }}
     </div>
@@ -19,7 +19,7 @@
     <div>
       <label for="title">Title</label>
       <input id="title" name="title" type="text" value="{{ .Title }}">
-      {{ with .Errors.title }}
+      {{ with .FieldErrors.title }}
         <p>{{ . }}</p>
       {{ end }}
     </div>
