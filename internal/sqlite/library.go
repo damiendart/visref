@@ -57,9 +57,9 @@ func (r *ItemRepository) Create(ctx context.Context, item *library.Item, file io
 
 	_, err = tx.ExecContext(
 		ctx,
-		`INSERT INTO items (id, title, description, mime_type, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO items (id, alternative_text, description, mime_type, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		u,
-		item.Title,
+		item.AlternativeText,
 		item.Description,
 		item.MimeType,
 		item.OriginalFilename,
@@ -94,7 +94,7 @@ func (r *ItemRepository) Get(ctx context.Context, id uuid.UUID) (*library.Item, 
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, `SELECT id, title, description, mime_type, original_filename, created_at, updated_at FROM items WHERE id = ?`, id.String())
+	rows, err := tx.QueryContext(ctx, `SELECT id, alternative_text, description, mime_type, original_filename, created_at, updated_at FROM items WHERE id = ?`, id.String())
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (r *ItemRepository) Get(ctx context.Context, id uuid.UUID) (*library.Item, 
 
 		if err := rows.Scan(
 			&item.ID,
-			&item.Title,
+			&item.AlternativeText,
 			&item.Description,
 			&item.MimeType,
 			&item.OriginalFilename,

@@ -15,8 +15,8 @@ import (
 )
 
 type itemAddForm struct {
-	Title       string
-	Description string
+	AlternativeText string
+	Description     string
 	validator.Validator
 }
 
@@ -34,8 +34,8 @@ func (app *application) itemsAddPostHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	form := itemAddForm{
-		Title:       r.PostForm.Get("title"),
-		Description: r.PostFormValue("description"),
+		AlternativeText: r.PostForm.Get("alternative_text"),
+		Description:     r.PostFormValue("description"),
 	}
 
 	file, header, err := r.FormFile("media")
@@ -60,15 +60,13 @@ func (app *application) itemsAddPostHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
-
 	if form.HasErrors() {
 		app.render(w, http.StatusUnprocessableEntity, "items_add.gohtml", form)
 		return
 	}
 
 	m := library.Item{
-		Title:            form.Title,
+		AlternativeText:  form.AlternativeText,
 		Description:      form.Description,
 		MimeType:         filetype,
 		OriginalFilename: header.Filename,

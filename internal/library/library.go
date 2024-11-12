@@ -10,7 +10,7 @@ import (
 // Item is an item in a visual reference library.
 type Item struct {
 	ID               uuid.UUID
-	Title            string
+	AlternativeText  string
 	Description      string
 	MimeType         string
 	OriginalFilename string

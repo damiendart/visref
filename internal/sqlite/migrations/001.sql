@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS items (
   id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
+  alternative_text TEXT,
   description TEXT,
   mime_type TEXT NOT NULL,
   original_filename TEXT NOT NULL,
@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS items (
   updated_at TEXT NOT NULL
 ) STRICT;
 
-CREATE INDEX IF NOT EXISTS idx_items_title ON items(title);
+CREATE INDEX IF NOT EXISTS idx_items_alternative_text ON items(alternative_text);

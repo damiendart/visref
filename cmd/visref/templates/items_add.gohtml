@@ -17,9 +17,9 @@
     </div>
 
     <div>
-      <label for="title">Title</label>
-      <input id="title" name="title" type="text" value="{{ .Title }}">
-      {{ with .FieldErrors.title }}
+      <label for="alternative_text">Alternative Text</label>
+      <input id="alternative_text" name="alternative_text" type="text" value="{{ .AlternativeText }}">
+      {{ with .FieldErrors.alternative_text }}
         <p>{{ . }}</p>
       {{ end }}
     </div>
