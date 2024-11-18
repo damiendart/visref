@@ -29,6 +29,17 @@ type config struct {
 	mediaDir string
 }
 
+var cfg config
+
+func init() {
+	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
+	flag.StringVar(&cfg.database, "database-path", "visref.db", "relative path to database")
+	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
+	flag.StringVar(&cfg.mediaDir, "media-dir", "media", "relative path to directory for storing media items")
+
+	flag.Parse()
+}
+
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
@@ -41,15 +52,6 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
-	var cfg config
-
-	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
-	flag.StringVar(&cfg.database, "database-path", "visref.db", "relative path to database")
-	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
-	flag.StringVar(&cfg.mediaDir, "media-dir", "media", "relative path to directory for storing media items")
-
-	flag.Parse()
-
 	err := os.MkdirAll(cfg.mediaDir, os.ModePerm)
 	if err != nil {
 		return err
