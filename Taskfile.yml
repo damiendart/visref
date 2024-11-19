@@ -33,6 +33,12 @@ tasks:
   build:
     cmds:
       - task: 'build:go'
+    desc: 'Build the "visref" application'
+
+  build-slim:
+    cmds:
+      - task: 'build:go-slim'
+    desc: 'Build the "visref" application'
 
   build:css:
     cmds:
@@ -53,7 +59,7 @@ tasks:
     vars:
       OUTPUT_FILE: 'cmd/visref/assets/app.js'
 
-  build:go:
+  build:go: &build-go
     cmds:
       - 'go build ./cmd/visref'
     deps:
@@ -69,6 +75,11 @@ tasks:
       - 'go.mod'
       - 'go.sum'
       - 'cmd/visref/assets/favicon.svg'
+
+  build:go-slim:
+    <<: *build-go
+    cmds:
+      - 'go build -ldflags "-s -w" -trimpath ./cmd/visref'
 
   dependencies:
     cmds:
