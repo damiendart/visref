@@ -16,7 +16,6 @@ import (
 
 type application struct {
 	config         config
-	database       *sqlite.DB
 	logger         *slog.Logger
 	ItemRepository library.ItemRepository
 	templateCache  TemplateCache
@@ -33,7 +32,7 @@ var cfg config
 
 func init() {
 	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
-	flag.StringVar(&cfg.database, "database-path", "visref.db", "relative path to database")
+	flag.StringVar(&cfg.database, "main-database-path", "visref.db", "relative path to main database")
 	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
 	flag.StringVar(&cfg.mediaDir, "media-dir", "media", "relative path to directory for storing media items")
 
@@ -62,16 +61,15 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	database := sqlite.NewDB(cfg.database, logger)
-	if err = database.Open(); err != nil {
+	mainDatabase := sqlite.NewMainDB(cfg.database, logger)
+	if err = mainDatabase.Open(); err != nil {
 		return err
 	}
 
 	app := &application{
 		config:         cfg,
-		database:       database,
 		logger:         logger,
-		ItemRepository: sqlite.NewItemRepository(database, cfg.mediaDir),
+		ItemRepository: sqlite.NewItemRepository(&mainDatabase.DB, cfg.mediaDir),
 		templateCache:  templateCache,
 	}
 

@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -17,18 +16,23 @@ import (
 	// This package is only imported for its side effect of registering
 	// the "sqlite3" driver for use with the "database/sql" package.
 	_ "github.com/mattn/go-sqlite3"
-)
 
-//go:embed migrations/*.sql
-var migrations embed.FS
+	"github.com/damiendart/visref/internal/sqlite/migrations"
+)
 
 // DB represents a SQLite database connection.
 type DB struct {
-	logger    *slog.Logger
-	path      string
-	readPool  *sql.DB
-	writePool *sql.DB
-	Now       func() time.Time
+	logger     *slog.Logger
+	migrations fs.FS
+	path       string
+	readPool   *sql.DB
+	writePool  *sql.DB
+	Now        func() time.Time
+}
+
+// MainDB represents the main database where permanent data is stored.
+type MainDB struct {
+	DB
 }
 
 // Tx provides a sql.Tx and a transaction start timestamp.
@@ -37,15 +41,20 @@ type Tx struct {
 	now time.Time
 }
 
-// NewDB returns a new instance of DB.
-func NewDB(path string, logger *slog.Logger) *DB {
+// NewMainDB returns a new instance of DB for the main database.
+func NewMainDB(path string, logger *slog.Logger) *MainDB {
 	if path == "" {
 		path = ":memory:"
 	}
 
-	db := &DB{logger: logger, path: path, Now: time.Now}
-
-	return db
+	return &MainDB{
+		DB{
+			logger:     logger,
+			migrations: migrations.MainDBMigrations,
+			path:       path,
+			Now:        time.Now,
+		},
+	}
 }
 
 // BeginTx starts a transaction.
@@ -110,7 +119,7 @@ func (db *DB) Open() (err error) {
 func (db *DB) migrate() error {
 	var version int
 
-	files, err := fs.Glob(migrations, "migrations/*.sql")
+	files, err := fs.Glob(db.migrations, "*.sql")
 	if err != nil {
 		return err
 	}
@@ -126,7 +135,7 @@ func (db *DB) migrate() error {
 	}
 
 	for i, name := range files[version:] {
-		contents, err := fs.ReadFile(migrations, name)
+		contents, err := fs.ReadFile(db.migrations, name)
 		if err != nil {
 			return err
 		}
