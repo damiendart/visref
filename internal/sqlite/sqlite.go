@@ -22,12 +22,12 @@ import (
 
 // DB represents a SQLite database connection.
 type DB struct {
-	logger     *slog.Logger
-	migrations fs.FS
-	path       string
-	readPool   *sql.DB
-	writePool  *sql.DB
-	Now        func() time.Time
+	logger        *slog.Logger
+	migrations    fs.FS
+	path          string
+	readOnlyPool  *sql.DB
+	readWritePool *sql.DB
+	Now           func() time.Time
 }
 
 // MainDB represents the main database where permanent data is stored.
@@ -59,7 +59,7 @@ func NewMainDB(path string, logger *slog.Logger) *MainDB {
 
 // BeginTx starts a transaction.
 func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
-	tx, err := db.writePool.BeginTx(ctx, opts)
+	tx, err := db.readWritePool.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -86,24 +86,24 @@ func (db *DB) Open() (err error) {
 
 	dsn := "file:" + db.path + "?" + dsnParams.Encode()
 
-	db.writePool, err = sql.Open("sqlite3", dsn)
+	db.readWritePool, err = sql.Open("sqlite3", dsn)
 	if err != nil {
 		return err
 	}
 
-	db.writePool.SetMaxOpenConns(1)
-	_, err = db.writePool.Exec("PRAGMA temp_store = memory")
+	db.readWritePool.SetMaxOpenConns(1)
+	_, err = db.readWritePool.Exec("PRAGMA temp_store = memory")
 	if err != nil {
 		return err
 	}
 
-	db.readPool, err = sql.Open("sqlite3", dsn)
+	db.readOnlyPool, err = sql.Open("sqlite3", dsn)
 	if err != nil {
 		return err
 	}
 
-	db.readPool.SetMaxOpenConns(max(4, runtime.NumCPU()))
-	_, err = db.readPool.Exec("PRAGMA temp_store = memory")
+	db.readOnlyPool.SetMaxOpenConns(max(4, runtime.NumCPU()))
+	_, err = db.readOnlyPool.Exec("PRAGMA temp_store = memory")
 	if err != nil {
 		return err
 	}
@@ -125,7 +125,7 @@ func (db *DB) migrate() error {
 	}
 	sort.Strings(files)
 
-	err = db.readPool.QueryRow("PRAGMA user_version").Scan(&version)
+	err = db.readOnlyPool.QueryRow("PRAGMA user_version").Scan(&version)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func (db *DB) migrate() error {
 			return err
 		}
 
-		tx, err := db.writePool.Begin()
+		tx, err := db.readWritePool.Begin()
 		if err != nil {
 			return err
 		}
