@@ -8,6 +8,7 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 
 	"github.com/damiendart/visref/internal/library"
@@ -23,18 +24,16 @@ type application struct {
 
 type config struct {
 	baseURL  string
-	database string
+	dataDir  string
 	httpPort int
-	mediaDir string
 }
 
 var cfg config
 
 func init() {
 	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
-	flag.StringVar(&cfg.database, "main-database-path", "visref.db", "relative path to main database")
+	flag.StringVar(&cfg.dataDir, "data-dir", "data", "relative path to directory for storing application data")
 	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
-	flag.StringVar(&cfg.mediaDir, "media-dir", "media", "relative path to directory for storing media items")
 
 	flag.Parse()
 }
@@ -51,7 +50,9 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
-	err := os.MkdirAll(cfg.mediaDir, os.ModePerm)
+	mediaDir := filepath.Join(cfg.dataDir, "media")
+
+	err := os.MkdirAll(mediaDir, 0700)
 	if err != nil {
 		return err
 	}
@@ -61,7 +62,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	mainDatabase := sqlite.NewMainDB(cfg.database, logger)
+	mainDatabase := sqlite.NewMainDB(filepath.Join(cfg.dataDir, "main.db"), logger)
 	if err = mainDatabase.Open(); err != nil {
 		return err
 	}
@@ -69,7 +70,7 @@ func run(logger *slog.Logger) error {
 	app := &application{
 		config:         cfg,
 		logger:         logger,
-		ItemRepository: sqlite.NewItemRepository(&mainDatabase.DB, cfg.mediaDir),
+		ItemRepository: sqlite.NewItemRepository(&mainDatabase.DB, mediaDir),
 		templateCache:  templateCache,
 	}
 
