@@ -7,6 +7,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/damiendart/visref/cmd/visref/resources"
 	"github.com/damiendart/visref/internal/httputil"
 )
 
@@ -16,7 +17,7 @@ func (app *application) routes() http.Handler {
 	mux.Use(DefaultHeaders, app.logRequest)
 
 	mux.HandleFunc("GET /{$}", app.itemsIndexHandler)
-	mux.Handle("GET /assets/", http.FileServer(http.FS(resources)))
+	mux.Handle("GET /assets/", http.FileServer(http.FS(resources.Resources)))
 	mux.Handle("GET /items", http.RedirectHandler("/", http.StatusFound))
 	mux.HandleFunc("GET /items/{id}", app.itemsShowHandler)
 	mux.HandleFunc("GET /tags", app.tagsIndexHandler)

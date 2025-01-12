@@ -27,7 +27,7 @@ tasks:
 
   clean:
     cmds:
-      - 'rm -fr .task visref node_modules resources/assets'
+      - 'rm -fr .task cmd/visref/resources/assets/*.{css,js} visref node_modules'
     desc: 'Delete all buildable files, caches, and third-party dependencies'
 
   build:
@@ -42,22 +42,24 @@ tasks:
 
   build:css:
     cmds:
-      - 'node_modules/.bin/sass --no-source-map resources/sass/app.scss {{ .OUTPUT_FILE }}'
+      - 'node_modules/.bin/sass --no-source-map {{ .INPUT_ENTRYPOINT }} {{ .OUTPUT_FILE }}'
       - 'node_modules/.bin/lightningcss --minify --targets ">= 0.25%" {{ .OUTPUT_FILE }} -o {{ .OUTPUT_FILE }}'
     desc: 'Build CSS files with Sass and friends'
     sources:
-      - 'resources/sass/**/*.scss'
+      - 'cmd/visref/resources/sass/**/*.scss'
     vars:
-      OUTPUT_FILE: 'cmd/visref/assets/style.css'
+      INPUT_ENTRYPOINT: 'cmd/visref/resources/sass/app.scss'
+      OUTPUT_FILE: 'cmd/visref/resources/assets/style.css'
 
   build:javascript:
     cmds:
-      - 'node_modules/.bin/esbuild resources/javascript/app.js --bundle --log-level=warning --minify --outfile={{ .OUTPUT_FILE }}'
+      - 'node_modules/.bin/esbuild {{ .INPUT_ENTRYPOINT }} --bundle --log-level=warning --minify --outfile={{ .OUTPUT_FILE }}'
     desc: 'Build JavaScript files with esbuild'
     sources:
-      - 'resources/javascript/**/*.js'
+      - 'cmd/visref/resources/javascript/**/*.js'
     vars:
-      OUTPUT_FILE: 'cmd/visref/assets/app.js'
+      INPUT_ENTRYPOINT: 'cmd/visref/resources/javascript/app.js'
+      OUTPUT_FILE: 'cmd/visref/resources/assets/app.js'
 
   build:go: &build-go
     cmds:

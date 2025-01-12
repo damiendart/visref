@@ -3,8 +3,8 @@
 # please refer to the accompanying "LICENCE" file.
 
 .task/
-cmd/visref/assets/
-!cmd/visref/assets/favicon.svg
+cmd/visref/resources/assets/
+!cmd/visref/resources/assets/favicon.svg
 data/
 node_modules/
 /visref

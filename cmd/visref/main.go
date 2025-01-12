@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
+	"github.com/damiendart/visref/cmd/visref/resources"
 	"github.com/damiendart/visref/internal/library"
 	"github.com/damiendart/visref/internal/sqlite"
 )
@@ -19,7 +20,7 @@ type application struct {
 	config         config
 	logger         *slog.Logger
 	ItemRepository library.ItemRepository
-	templateCache  TemplateCache
+	templateCache  resources.TemplateCache
 }
 
 type config struct {
@@ -57,7 +58,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	templateCache, err := NewTemplateCache()
+	templateCache, err := resources.NewTemplateCache()
 	if err != nil {
 		return err
 	}
