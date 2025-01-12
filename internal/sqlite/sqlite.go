@@ -43,10 +43,6 @@ type Tx struct {
 
 // NewMainDB returns a new instance of DB for the main database.
 func NewMainDB(path string, logger *slog.Logger) *MainDB {
-	if path == "" {
-		path = ":memory:"
-	}
-
 	return &MainDB{
 		DB{
 			logger:     logger,
@@ -70,6 +66,10 @@ func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 // Open opens reading and writing database connections and executes any
 // outstanding database migrations.
 func (db *DB) Open() (err error) {
+	if db.path == "" {
+		db.path = ":memory:"
+	}
+
 	if db.path != ":memory:" {
 		if err := os.MkdirAll(filepath.Dir(db.path), 0700); err != nil {
 			return err
@@ -77,12 +77,17 @@ func (db *DB) Open() (err error) {
 	}
 
 	dsnParams := url.Values{}
+
 	dsnParams.Add("_busy_timeout", "5000")
 	dsnParams.Add("_cache_size", "1000000000")
 	dsnParams.Add("_foreign_keys", "true")
 	dsnParams.Add("_journal_mode", "WAL")
 	dsnParams.Add("_synchronous", "NORMAL")
 	dsnParams.Add("_txlock", "immediate")
+
+	if db.path == ":memory:" {
+		dsnParams.Add("cache", "shared")
+	}
 
 	dsn := "file:" + db.path + "?" + dsnParams.Encode()
 
