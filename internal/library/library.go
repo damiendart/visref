@@ -2,9 +2,10 @@ package library
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"io"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Item is an item in a visual reference library.

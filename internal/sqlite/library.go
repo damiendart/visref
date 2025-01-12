@@ -3,12 +3,14 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	"github.com/damiendart/visref/internal/library"
-	"github.com/google/uuid"
 	"io"
 	"mime"
 	"os"
 	"path/filepath"
+
+	"github.com/google/uuid"
+
+	"github.com/damiendart/visref/internal/library"
 )
 
 // ItemRepository is an implementation of library.ItemRepository which

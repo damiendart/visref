@@ -6,9 +6,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"net/http"
+
+	"github.com/google/uuid"
 
 	"github.com/damiendart/visref/internal/library"
 	"github.com/damiendart/visref/internal/validator"
