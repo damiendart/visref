@@ -1,0 +1,111 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "sass:math";
+@use "functions";
+@use "mixins";
+@use "variables";
+@use "utilities/text";
+
+:root {
+  --background-colour: #{variables.$colour-base-grey-light};
+  --background-grid-colour: color-mix(in oklab, var(--background-colour) 98%, black);
+  --button-background-colour: #{variables.$colour-indigo-7};
+  --button-foreground-colour: #{variables.$colour-base-white};
+  --foreground-colour: #{variables.$colour-base-black};
+  --link-colour: #{variables.$colour-indigo-7};
+  --site-header-background-colour: #{variables.$colour-base-white};
+  --site-header-foreground-colour: inherit;
+}
+
+a {
+  &:active,
+  &:hover,
+  &:focus,
+  &:focus-visible {
+    text-decoration-color: currentColor;
+    text-decoration-line: underline;
+    text-decoration-thickness: functions.px-to-rem(2px);
+  }
+}
+
+:focus-visible {
+  outline: var(--outline-colour, currentColor) solid (variables.$base-one-pixel-in-rem * 3);
+}
+
+:focus-within {
+  @media (prefers-reduced-motion: no-preference) {
+    scroll-behavior: smooth;
+  }
+}
+
+:target {
+  scroll-margin-block: variables.$base-line-height;
+}
+
+a {
+  color: var(--link-colour);
+}
+
+body {
+  --grid-size: #{functions.px-to-rem(40px)};
+  --grid-thickness: #{functions.px-to-rem(2px)};
+
+  background:
+    conic-gradient(
+        from 90deg at var(--grid-thickness) var(--grid-thickness), var(--background-colour) 25%, var(--background-grid-colour) 0
+    ) center / var(--grid-size) var(--grid-size);
+  color: var(--foreground-colour);
+  font-family: variables.$font-stack-system;
+  font-size: math.percentage(math.div(variables.$base-font-size, 16px));
+  height: 100%;
+  line-height: variables.$base-line-height;
+  margin: 0;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 {
+  @extend .u-text-size-xl;
+}
+
+hr[aria-hidden="true"] {
+  display: none;
+}
+
+img {
+  font-style: italic;
+  height: auto;
+  margin: 0;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+li, p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+ol, ul {
+  margin: 0;
+  padding: 0;
+
+  & > * {
+    margin-left: variables.$base-line-height;
+    padding: 0;
+
+    & > ul, & > ol {
+      margin: 0;
+    }
+  }
+
+  &[class] > *,
+  &[role="list"] > * {
+    list-style: none;
+    margin-left: 0;
+  }
+}

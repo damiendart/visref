@@ -76,7 +76,7 @@ tasks:
       - '**/*.sql'
       - 'go.mod'
       - 'go.sum'
-      - 'cmd/visref/assets/favicon.svg'
+      - 'cmd/visref/resources/assets/*'
 
   build:go-slim:
     <<: *build-go

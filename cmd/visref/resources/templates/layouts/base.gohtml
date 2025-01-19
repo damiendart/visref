@@ -14,12 +14,34 @@
     <link href="/assets/style.css" rel="stylesheet">
     <title>{{ template "title" . }} &mdash; visref</title>
   </head>
-  <body>
-    <header>
-      <p><a href="/">visref</a></p>
-      <hr>
+  <body class="u-stack">
+    <div class="skip-links u-stack__cozy">
+      <ul class="skip-links__list" role="list">
+        <li class="skip-links__list__item">
+          <a href="#content">Skip to content</a>
+        </li>
+      </ul>
+      <hr aria-hidden="true">
+    </div>
+
+    <header class="site-header u-stack__cozy">
+      <p class="site-header__title u-text-size-lg"><b><a href="/">visref</a></b></p>
+      <nav class="site-header__navigation u-text-size-md">
+        <ul class="site-header__navigation__list" role="list">
+          <li><a href="/items/add">Add library item</a></li>
+          <li><a href="/">Library</a></li>
+          <li><a href="/tags">Tags</a></li>
+          <li><a href="#">Help</a></li>
+          <li class="site-header__navigation__list__split"><a href="#">Settings</a></li>
+        </ul>
+      </nav>
+      <hr aria-hidden="true">
     </header>
-    {{ template "main" . }}
+
+    <main class="u-content u-stack u-stack__lg" id="content">
+      {{ template "main" . }}
+    </main>
+
     <script src="/assets/app.js" type="module"></script>
   </body>
   </html>

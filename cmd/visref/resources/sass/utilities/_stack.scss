@@ -1,0 +1,48 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "sass:math";
+@use "../mixins";
+@use "../variables";
+
+.u-stack {
+  $s: &;
+
+  & > * {
+    margin-top: 0;
+  }
+
+  & > * + * {
+    margin-top: math.div(variables.$base-line-height, 2);
+  }
+
+  & > :where(* + &__md),
+  & > :where(&__md + *) {
+    margin-top: variables.$base-line-height;
+  }
+
+  & > :where(* + &__lg),
+  & > :where(&__lg + *) {
+    margin-top: variables.$base-line-height * 1.5;
+  }
+
+  & > :where(* + &__xl),
+  & > :where(&__xl + *) {
+    margin-top: variables.$base-line-height * 2;
+  }
+
+  & > &__cozy + &__cozy {
+    margin-top: 0;
+  }
+
+  &--flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    & > #{$s}__split {
+      margin-block-end: auto;
+    }
+  }
+}

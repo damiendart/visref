@@ -1,0 +1,48 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "../mixins";
+@use "../variables";
+
+.skip-links {
+  background: var(--button-background-colour);
+  box-sizing: border-box;
+  color: var(--button-foreground-colour);
+  font-weight: bold;
+  height: auto;
+  left: 0;
+  opacity: 0;
+  padding: variables.$base-line-height;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 0.125s ease-in;
+  width: 100%;
+  z-index: 2;
+
+  &:focus-within {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  a {
+    color: inherit;
+    text-decoration-line: none;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    list-style: none;
+
+    &__item {
+      position: relative;
+      text-align: center;
+
+      & + & {
+        margin-top: variables.$base-line-height * 0.25;
+      }
+    }
+  }
+}

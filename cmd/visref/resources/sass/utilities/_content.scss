@@ -1,0 +1,41 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "sass:map";
+@use "../functions";
+@use "../variables";
+
+.u-content {
+  $gutter: variables.$base-line-height * 1.5;
+  $width-normal: functions.px-to-rem(map.get(variables.$content-widths, normal));
+  $width-wide: functions.px-to-rem(map.get(variables.$content-widths, wide));
+
+  display: grid;
+  grid-template-columns:
+    [full-width-start] minmax(#{$gutter}, 1fr)
+    [wide-content-start] min(#{$width-wide}, 100% - #{$gutter * 2}) [wide-content-end]
+    minmax(#{$gutter}, 1fr) [full-width-end];
+  grid-template-rows: min-content;
+
+  & > * {
+    grid-column: wide-content;
+    margin-inline: auto;
+    max-width: $width-normal;
+    width: 100%;
+  }
+
+  & > &__full-width {
+    grid-column: full-width;
+    max-width: 100%;
+  }
+
+  & > &__full-width-with-gutter {
+    grid-column: full-width;
+    max-width: calc(100% - #{$gutter * 2});
+  }
+
+  & > &__wide {
+    max-width: 100%;
+  }
+}

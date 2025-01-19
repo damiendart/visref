@@ -1,0 +1,62 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "sass:map";
+@use "sass:math";
+@use "../functions";
+@use "../variables";
+
+.site-header {
+  display: grid;
+  gap: variables.$base-line-height * 2;
+  grid-template-areas: "title navigation";
+  grid-template-columns: min-content 1fr;
+  background: var(--site-header-background-colour);
+  box-sizing: border-box;
+  color: var(--site-header-foreground-colour);
+  padding: variables.$base-line-height (variables.$base-line-height * 1.5);
+  position: relative;
+
+  &::after {
+    background: currentColor;
+    bottom: functions.px-to-rem(-1px);
+    content: "";
+    display: block;
+    height: functions.px-to-rem(2px);
+    left: 0;
+    position: absolute;
+    width: 100%;
+  }
+
+  :where(a) {
+    font-weight: bold;
+    text-decoration-line: none;
+  }
+
+  &__navigation {
+    align-items: center;
+    display: flex;
+    grid-area: navigation;
+
+    &__list {
+      display: flex;
+      flex-direction: row;
+      grid-area: navigation;
+      gap: variables.$base-line-height;
+      width: 100%;
+
+      &__split {
+        margin-inline-start: auto;
+      }
+    }
+  }
+
+  &__title {
+    grid-area: title;
+
+    a {
+      color: inherit;
+    }
+  }
+}
