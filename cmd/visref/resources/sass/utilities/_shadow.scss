@@ -1,0 +1,9 @@
+@use "../variables";
+
+.u-shadow {
+  box-shadow: (variables.$base-line-height * 0.125) (variables.$base-line-height * 0.125) 0 var(--shadow-colour);
+
+  &:focus-visible {
+    box-shadow: none;
+  }
+}

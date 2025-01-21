@@ -12,13 +12,15 @@
   $width-wide: functions.px-to-rem(map.get(variables.$content-widths, wide));
 
   display: grid;
+  grid-column: full-width;
   grid-template-columns:
     [full-width-start] minmax(#{$gutter}, 1fr)
     [wide-content-start] min(#{$width-wide}, 100% - #{$gutter * 2}) [wide-content-end]
     minmax(#{$gutter}, 1fr) [full-width-end];
   grid-template-rows: min-content;
+  max-width: 100%;
 
-  & > * {
+  & > *:not(&) {
     grid-column: wide-content;
     margin-inline: auto;
     max-width: $width-normal;

@@ -7,9 +7,9 @@
 {{ define "title" }}Add Library Item{{ end }}
 
 {{ define "main" }}
-  <h1>Add a library item</h1>
-  <form action="/items/add" enctype="multipart/form-data" method="post">
-    <div>
+  <h1 class="u-content__wide u-stack__lg">Add a library item</h1>
+  <form action="/items/add" class="u-content u-stack" enctype="multipart/form-data" method="post">
+    <div class="media-dropzone u-content__wide u-stack u-stack__lg u-stack--condensed">
       <label for="media">Media</label>
       <input id="media" name="media" type="file">
       {{ with .FieldErrors.media }}
@@ -17,7 +17,7 @@
       {{ end }}
     </div>
 
-    <div>
+    <div class="u-stack u-stack__md u-stack--condensed">
       <label for="alternative_text">Alternative Text</label>
       <input id="alternative_text" name="alternative_text" type="text" value="{{ .AlternativeText }}">
       {{ with .FieldErrors.alternative_text }}
@@ -25,13 +25,13 @@
       {{ end }}
     </div>
 
-    <div>
+    <div class="u-stack u-stack__md u-stack--condensed">
       <label for="description">Description</label>
       <textarea id="description" name="description">{{ .Description }}</textarea>
     </div>
 
-    <div>
-      <input type="submit" value="Add item">
+    <div class="u-stack__lg">
+      <input class="button" type="submit" value="Create item">
     </div>
   </form>
 {{ end }}

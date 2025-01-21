@@ -11,10 +11,22 @@
 :root {
   --background-colour: #{variables.$colour-base-grey-light};
   --background-grid-colour: color-mix(in oklab, var(--background-colour) 98%, black);
-  --button-background-colour: #{variables.$colour-indigo-7};
+
+  --button-background-colour: #{variables.$colour-indigo-8};
+  --button-border-colour: #{variables.$colour-base-black};
   --button-foreground-colour: #{variables.$colour-base-white};
+  --button-hover-background-colour: #{variables.$colour-indigo-9};
+
   --foreground-colour: #{variables.$colour-base-black};
-  --link-colour: #{variables.$colour-indigo-7};
+
+  --form-input-background-colour: #{variables.$colour-base-white};
+  --form-input-error-foreground-colour: #{variables.$colour-red-9};
+  --form-input-foreground-colour: #{variables.$colour-base-black};
+
+  --link-colour: #{variables.$colour-indigo-8};
+  --outline-colour: currentColor;
+  --shadow-colour: #{variables.$colour-base-black};
+
   --site-header-background-colour: #{variables.$colour-base-white};
   --site-header-foreground-colour: inherit;
 }
@@ -31,7 +43,7 @@ a {
 }
 
 :focus-visible {
-  outline: var(--outline-colour, currentColor) solid (variables.$base-one-pixel-in-rem * 3);
+  outline: var(--outline-colour) solid (variables.$base-one-pixel-in-rem * 3);
 }
 
 :focus-within {
@@ -55,7 +67,7 @@ body {
   background:
     conic-gradient(
         from 90deg at var(--grid-thickness) var(--grid-thickness), var(--background-colour) 25%, var(--background-grid-colour) 0
-    ) center / var(--grid-size) var(--grid-size);
+    ) top center / var(--grid-size) var(--grid-size);
   color: var(--foreground-colour);
   font-family: variables.$font-stack-system;
   font-size: math.percentage(math.div(variables.$base-font-size, 16px));
@@ -83,6 +95,32 @@ img {
   margin: 0;
   max-width: 100%;
   vertical-align: middle;
+}
+
+:where(input[type="email"]),
+:where(input[type="password"]),
+:where(input[type="text"]),
+textarea, {
+  -webkit-appearance: none;
+  appearance: none;
+  border: functions.px-to-rem(2px) solid var(--form-input-foreground-colour);
+  border-radius: 0;
+  background: var(--form-input-background-colour);
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: inherit;
+  margin: 0;
+  padding: variables.$base-line-height * 0.5;
+  width: 100%;
+
+  &[aria-invalid="true"] {
+    border-color: var(--form-error-foreground-colour);
+  }
+}
+
+label {
+  display: block;
+  font-weight: bold;
 }
 
 li, p {
