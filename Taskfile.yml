@@ -40,6 +40,16 @@ tasks:
       - task: 'build:go-slim'
     desc: 'Build the "visref" application'
 
+  # While Task provides functionality that runs tasks when files
+  # changes, it's a little basic and slow to react to file changes. For
+  # more information about entr, see <http://eradman.com/entrproject/>.
+  build-watch:
+    cmds:
+      - cmd: 'command -v entr || (echo "\"entr\" is required."; exit 1)'
+        silent: true
+      - 'while sleep 0.1; do find cmd/ internal/ | entr -d task build && break; done'
+    desc: 'Runs entr to execute the "build" task on file changes'
+
   build:css:
     cmds:
       - 'node_modules/.bin/sass --no-source-map {{ .INPUT_ENTRYPOINT }} {{ .OUTPUT_FILE }}'
