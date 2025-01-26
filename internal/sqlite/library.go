@@ -32,13 +32,32 @@ func (r *ItemRepository) Create(ctx context.Context, item *library.Item, file io
 		return err
 	}
 
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	now := tx.now
+
 	ext, err := mime.ExtensionsByType(item.MimeType)
 	if err != nil {
 		return err
 	}
 
+	err = os.MkdirAll(
+		filepath.Join(r.mediaDir, now.Format("2006/01")),
+		0700,
+	)
+	if err != nil {
+		return err
+	}
+
 	dst, err := os.Create(
-		filepath.Join(r.mediaDir, fmt.Sprintf("%s%s", u.String(), ext[0])),
+		filepath.Join(
+			r.mediaDir,
+			now.Format("2006/01"),
+			fmt.Sprintf("%s%s", u.String(), ext[0]),
+		),
 	)
 	if err != nil {
 		return err
@@ -50,20 +69,17 @@ func (r *ItemRepository) Create(ctx context.Context, item *library.Item, file io
 		return err
 	}
 
-	tx, err := r.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	now := tx.now
-
 	_, err = tx.ExecContext(
 		ctx,
-		`INSERT INTO items (id, alternative_text, description, mime_type, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO items (id, alternative_text, description, mime_type, filepath, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 		u,
 		item.AlternativeText,
 		item.Description,
 		item.MimeType,
+		filepath.Join(
+			now.Format("2006/01"),
+			fmt.Sprintf("%s%s", u.String(), ext[0]),
+		),
 		item.OriginalFilename,
 		(*NullTime)(&now),
 		(*NullTime)(&now),
@@ -96,7 +112,7 @@ func (r *ItemRepository) Get(ctx context.Context, id uuid.UUID) (*library.Item, 
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, `SELECT id, alternative_text, description, mime_type, original_filename, created_at, updated_at FROM items WHERE id = ?`, id.String())
+	rows, err := tx.QueryContext(ctx, `SELECT id, alternative_text, description, mime_type, filepath, original_filename, created_at, updated_at FROM items WHERE id = ?`, id.String())
 	if err != nil {
 		return nil, err
 	}
@@ -111,6 +127,7 @@ func (r *ItemRepository) Get(ctx context.Context, id uuid.UUID) (*library.Item, 
 			&item.AlternativeText,
 			&item.Description,
 			&item.MimeType,
+			&item.Filepath,
 			&item.OriginalFilename,
 			(*NullTime)(&item.CreatedAt),
 			(*NullTime)(&item.UpdatedAt),

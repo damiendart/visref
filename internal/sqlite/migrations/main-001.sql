@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS items (
   alternative_text TEXT,
   description TEXT,
   mime_type TEXT NOT NULL,
+  filepath TEXT NOT NULL,
   original_filename TEXT NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL

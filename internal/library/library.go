@@ -14,6 +14,7 @@ type Item struct {
 	AlternativeText  string
 	Description      string
 	MimeType         string
+	Filepath         string
 	OriginalFilename string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
