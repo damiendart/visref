@@ -73,7 +73,7 @@ func (app *application) itemsAddPostHandler(w http.ResponseWriter, r *http.Reque
 		OriginalFilename: header.Filename,
 	}
 
-	err = app.ItemRepository.Create(r.Context(), &m, file)
+	err = app.LibraryService.CreateItem(r.Context(), &m, file)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -93,7 +93,7 @@ func (app *application) itemsShowHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	item, err := app.ItemRepository.Get(r.Context(), id)
+	item, err := app.LibraryService.GetItemByID(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

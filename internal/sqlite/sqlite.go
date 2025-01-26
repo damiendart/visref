@@ -20,7 +20,7 @@ import (
 	"github.com/damiendart/visref/internal/sqlite/migrations"
 )
 
-// DB represents a SQLite database connection.
+// DB represents an SQLite database connection.
 type DB struct {
 	logger        *slog.Logger
 	migrations    fs.FS
@@ -38,7 +38,7 @@ type MainDB struct {
 // Tx provides a sql.Tx and a transaction start timestamp.
 type Tx struct {
 	*sql.Tx
-	now time.Time
+	Now time.Time
 }
 
 // NewMainDB returns a new instance of DB for the main database.

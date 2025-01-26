@@ -19,7 +19,7 @@ import (
 type application struct {
 	config         config
 	logger         *slog.Logger
-	ItemRepository library.ItemRepository
+	LibraryService *library.Service
 	templateCache  resources.TemplateCache
 }
 
@@ -71,7 +71,7 @@ func run(logger *slog.Logger) error {
 	app := &application{
 		config:         cfg,
 		logger:         logger,
-		ItemRepository: sqlite.NewItemRepository(&mainDatabase.DB, mediaDir),
+		LibraryService: library.NewService(&mainDatabase.DB, mediaDir),
 		templateCache:  templateCache,
 	}
 
