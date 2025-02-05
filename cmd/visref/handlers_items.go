@@ -99,5 +99,16 @@ func (app *application) itemsShowHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	if r.URL.Query().Get("download") == "1" {
+		f, err := app.LibraryService.GetOriginalFileByItem(item)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.ServeContent(w, r, item.OriginalFilename, item.CreatedAt, f)
+		return
+	}
+
 	fmt.Fprintf(w, "itemsShow: %v", item)
 }

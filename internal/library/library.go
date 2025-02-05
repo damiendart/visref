@@ -163,3 +163,13 @@ func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) 
 
 	return items[0], nil
 }
+
+// GetOriginalFileByItem returns the original uploaded file for an item.
+func (s *Service) GetOriginalFileByItem(item *Item) (io.ReadSeeker, error) {
+	f, err := os.Open(filepath.Join(s.mediaDir, item.Filepath))
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
