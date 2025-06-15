@@ -4,7 +4,10 @@
 
 package httputil
 
-import "net/http"
+import (
+	"net/http"
+	"slices"
+)
 
 // The Router type represents an HTTP router that dispatches requests to
 // handlers that can be wrapped with middleware functions.
@@ -58,8 +61,8 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (router *Router) wrapMiddleware(h http.Handler) http.Handler {
-	for i := len(router.middleware) - 1; i >= 0; i-- {
-		h = router.middleware[i](h)
+	for _, mw := range slices.Backward(router.middleware) {
+		h = mw(h)
 	}
 
 	return h
