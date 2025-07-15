@@ -9,61 +9,102 @@ import (
 	"slices"
 )
 
-// The Router type represents an HTTP router that dispatches requests to
-// handlers that can be wrapped with middleware functions.
+// A Router is a wrapper around http.ServeMux that adds support for
+// middleware functions. Middleware functions chains can be applied
+// globally for all requests, including those handled by http.ServeMux
+// (e.g. error handlers), and on registered routes.
 type Router struct {
+	globalMiddleware []func(http.Handler) http.Handler
+	routeMiddleware  []func(http.Handler) http.Handler
+	serveMux         *http.ServeMux
+}
+
+// A SubRouter is used by the Router to create child route groups.
+type SubRouter struct {
 	middleware []func(http.Handler) http.Handler
-	mux        *http.ServeMux
+	serveMux   *http.ServeMux
 }
 
 // NewRouter returns a new instance of Router.
 func NewRouter() *Router {
-	return &Router{mux: http.NewServeMux()}
+	return &Router{serveMux: http.NewServeMux()}
 }
 
-// Group groups routes within in a Router, allowing middleware to be
-// registered for only those routes.
-func (router *Router) Group(fn func(Router)) {
-	fn(*router)
+// Group creates a route group, inheriting route middleware chains
+// from its parent. It can be extended with additional route middleware.
+func (r *Router) Group(fn func(SubRouter)) {
+	fn(SubRouter{middleware: slices.Clone(r.routeMiddleware), serveMux: r.serveMux})
 }
 
-// Handle registers the handler for the given pattern, wrapping the
-// handler with middleware functions.
-func (router *Router) Handle(pattern string, handler http.Handler) {
-	router.mux.Handle(pattern, router.wrapMiddleware(handler))
+// Handle registers the handler for the given pattern and wraps the
+// handler with the current router middleware chain.
+func (r *Router) Handle(pattern string, handler http.Handler) {
+	for _, mw := range slices.Backward(r.routeMiddleware) {
+		handler = mw(handler)
+	}
+
+	r.serveMux.Handle(pattern, handler)
 }
 
-// HandleFunc registers the handler function for the given pattern,
-// wrapping the handler with middleware functions.
-func (router *Router) HandleFunc(pattern string, fn http.HandlerFunc) {
-	router.mux.Handle(pattern, router.wrapMiddleware(fn))
+// HandleFunc registers the handler function for the given pattern and
+// wraps the handler with the current router middleware chain.
+func (r *Router) HandleFunc(pattern string, fn http.HandlerFunc) {
+	r.Handle(pattern, fn)
 }
 
-// Use registers the given middleware functions. Middleware functions
-// are applied to handlers so that they are called in the order they
-// were registered.
-func (router *Router) Use(m ...func(http.Handler) http.Handler) {
-	router.middleware = append(router.middleware, m...)
+// Use adds the given functions to the route middleware chain.
+func (r *Router) Use(m ...func(http.Handler) http.Handler) {
+	r.routeMiddleware = append(r.routeMiddleware, m...)
+}
+
+// UseGlobal adds the given functions to the global middleware chain.
+func (r *Router) UseGlobal(m ...func(http.Handler) http.Handler) {
+	r.globalMiddleware = append(r.globalMiddleware, m...)
 }
 
 // ServeHTTP makes Router implement the http.Handler interface. It
 // implements support for spoofing unsupported HTML form actions (PUT,
 // PATCH, and DELETE) with a hidden "_method" input field.
-func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		switch m := r.PostFormValue("_method"); m {
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodPost {
+		switch m := req.PostFormValue("_method"); m {
 		case http.MethodDelete, http.MethodPatch, http.MethodPut:
-			r.Method = m
+			req.Method = m
 		}
 	}
 
-	router.mux.ServeHTTP(w, r)
-}
+	var h http.Handler = r.serveMux
 
-func (router *Router) wrapMiddleware(h http.Handler) http.Handler {
-	for _, mw := range slices.Backward(router.middleware) {
+	for _, mw := range slices.Backward(r.globalMiddleware) {
 		h = mw(h)
 	}
 
-	return h
+	h.ServeHTTP(w, req)
+}
+
+// Group creates a route group, inheriting route middleware chains
+// from its parent. It can be extended with additional route middleware.
+func (s *SubRouter) Group(fn func(router SubRouter)) {
+	fn(SubRouter{middleware: slices.Clone(s.middleware), serveMux: s.serveMux})
+}
+
+// Handle registers the handler for the given pattern and wraps the
+// handler with the current router middleware chain.
+func (s *SubRouter) Handle(pattern string, handler http.Handler) {
+	for _, mw := range slices.Backward(s.middleware) {
+		handler = mw(handler)
+	}
+
+	s.serveMux.Handle(pattern, handler)
+}
+
+// HandleFunc registers the handler function for the given pattern and
+// wraps the handler with the current router middleware chain.
+func (s *SubRouter) HandleFunc(pattern string, fn http.HandlerFunc) {
+	s.Handle(pattern, fn)
+}
+
+// Use adds the given functions to the route middleware chain.
+func (s *SubRouter) Use(m ...func(http.Handler) http.Handler) {
+	s.middleware = append(s.middleware, m...)
 }

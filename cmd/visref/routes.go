@@ -14,7 +14,7 @@ import (
 func (app *application) routes() http.Handler {
 	mux := httputil.NewRouter()
 
-	mux.Use(DefaultHeaders, app.logRequest)
+	mux.UseGlobal(DefaultHeaders, app.logRequest)
 
 	mux.HandleFunc("GET /{$}", app.itemsIndexHandler)
 	mux.Handle("GET /assets/", http.FileServer(http.FS(resources.Resources)))
@@ -24,7 +24,7 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET /tags/{tag}", app.tagsShowHandler)
 
 	mux.Group(
-		func(m httputil.Router) {
+		func(m httputil.SubRouter) {
 			m.HandleFunc("GET /items/add", app.itemsAddHandler)
 			m.HandleFunc("POST /items/add", app.itemsAddPostHandler)
 			m.HandleFunc("GET /tags/add", app.tagsAddHandler)

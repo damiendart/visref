@@ -21,32 +21,50 @@ func TestRouterGroup(t *testing.T) {
 		}
 	}
 
-	mux.Use(newMiddleware("Chicken"))
+	mux.UseGlobal(newMiddleware("Chicken"))
+
 	mux.Handle("GET /one", handler)
 
+	mux.Use(newMiddleware("Duck"))
+
+	mux.Handle("GET /two", handler)
+
 	mux.Group(
-		func(m Router) {
-			m.Use(newMiddleware("Duck"))
-			m.Handle("GET /two", handler)
+		func(m SubRouter) {
+			m.Use(newMiddleware("Goose"))
+			m.Handle("GET /three", handler)
+
+			m.Group(
+				func(m SubRouter) {
+					m.Use(newMiddleware("Pigeon"))
+					m.Handle("GET /four", handler)
+				},
+			)
 		},
 	)
 
-	mux.Handle("GET /three", handler)
+	mux.Handle("GET /five", handler)
 
 	var tests = []struct {
-		path                 string
-		expectedHeaderValues []string
+		requestMethod            string
+		requestPath              string
+		expectedTestHeaderValues []string
+		expectedStatus           int
 	}{
-		{"/one", []string{"Chicken"}},
-		{"/two", []string{"Chicken", "Duck"}},
-		{"/three", []string{"Chicken"}},
+		{"GET", "/one", []string{"Chicken"}, http.StatusOK},
+		{"GET", "/two", []string{"Chicken", "Duck"}, http.StatusOK},
+		{"GET", "/three", []string{"Chicken", "Duck", "Goose"}, http.StatusOK},
+		{"GET", "/four", []string{"Chicken", "Duck", "Goose", "Pigeon"}, http.StatusOK},
+		{"GET", "/five", []string{"Chicken", "Duck"}, http.StatusOK},
+		{"GET", "/404", []string{"Chicken"}, http.StatusNotFound},
+		{"POST", "/one", []string{"Chicken"}, http.StatusMethodNotAllowed},
 	}
 
 	for _, tt := range tests {
 		t.Run(
-			tt.path[1:],
+			tt.requestPath[1:],
 			func(t *testing.T) {
-				r, err := http.NewRequest("GET", tt.path, nil)
+				r, err := http.NewRequest("GET", tt.requestPath, nil)
 				if err != nil {
 					t.Error(err)
 				}
@@ -56,8 +74,8 @@ func TestRouterGroup(t *testing.T) {
 
 				v := rr.Result().Header.Values("X-Test")
 
-				if reflect.DeepEqual(v, tt.expectedHeaderValues) == false {
-					t.Errorf("got %#v, want %#v", tt.expectedHeaderValues, v)
+				if reflect.DeepEqual(v, tt.expectedTestHeaderValues) == false {
+					t.Errorf("got %#v, want %#v", v, tt.expectedTestHeaderValues)
 				}
 			},
 		)
