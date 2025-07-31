@@ -62,18 +62,31 @@ func (r *Router) UseGlobal(m ...func(http.Handler) http.Handler) {
 	r.globalMiddleware = append(r.globalMiddleware, m...)
 }
 
-// ServeHTTP makes Router implement the http.Handler interface. It
-// implements support for spoofing unsupported HTML form actions (PUT,
-// PATCH, and DELETE) with a hidden "_method" input field.
+// ServeHTTP makes Router implement the http.Handler interface.
+//
+// Unsupported HTML form actions (DELETE, PATCH, and PUT) can be spoofed
+// by providing the HTTP request method in either a "_method" parameter
+// in the request body or an "X-Http-Method-Override" HTTP header.
+// If both are provided, the value from the request body is used.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodPost {
-		switch m := req.PostFormValue("_method"); m {
+		m := ""
+
+		if err := req.ParseForm(); err == nil {
+			m = req.PostFormValue("_method")
+		}
+
+		if m == "" {
+			m = req.Header.Get("X-Http-Method-Override")
+		}
+
+		switch m {
 		case http.MethodDelete, http.MethodPatch, http.MethodPut:
 			req.Method = m
 		}
 	}
 
-	var h http.Handler = r.serveMux
+	h := http.Handler(r.serveMux)
 
 	for _, mw := range slices.Backward(r.globalMiddleware) {
 		h = mw(h)

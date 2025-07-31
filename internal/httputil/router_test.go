@@ -7,6 +7,80 @@ import (
 	"testing"
 )
 
+func TestRouter_MethodSpoofingPrecedence(t *testing.T) {
+	mux := NewRouter()
+	r := httptest.NewRequest(http.MethodPost, "/", nil)
+	rr := httptest.NewRecorder()
+
+	r.Header.Set("X-Http-Method-Override", http.MethodDelete)
+	r.PostForm = map[string][]string{"_method": {http.MethodPatch}}
+
+	mux.HandleFunc(
+		"/",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("X-Test", r.Method)
+		},
+	)
+
+	mux.ServeHTTP(rr, r)
+
+	m := rr.Result().Header.Get("X-Test")
+
+	if m != http.MethodPatch {
+		t.Errorf("got %#v, want %#v", m, http.MethodPatch)
+	}
+}
+
+func TestRouter_MethodSpoofingUsingValueFromRequestBody(t *testing.T) {
+	for _, tt := range []string{http.MethodDelete, http.MethodPatch, http.MethodPut} {
+		mux := NewRouter()
+		r := httptest.NewRequest(http.MethodPost, "/", nil)
+		rr := httptest.NewRecorder()
+
+		r.PostForm = map[string][]string{"_method": {tt}}
+
+		mux.HandleFunc(
+			"/",
+			func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("X-Test", r.Method)
+			},
+		)
+
+		mux.ServeHTTP(rr, r)
+
+		m := rr.Result().Header.Get("X-Test")
+
+		if m != tt {
+			t.Errorf("got %#v, want %#v", m, tt)
+		}
+	}
+}
+
+func TestRouter_MethodSpoofingUsingHTTPHeader(t *testing.T) {
+	for _, tt := range []string{http.MethodDelete, http.MethodPatch, http.MethodPut} {
+		mux := NewRouter()
+		r := httptest.NewRequest(http.MethodPost, "/", nil)
+		rr := httptest.NewRecorder()
+
+		r.Header.Set("X-Http-Method-Override", tt)
+
+		mux.HandleFunc(
+			"/",
+			func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("X-Test", r.Method)
+			},
+		)
+
+		mux.ServeHTTP(rr, r)
+
+		m := rr.Result().Header.Get("X-Test")
+
+		if m != tt {
+			t.Errorf("got %#v, want %#v", m, tt)
+		}
+	}
+}
+
 func TestRouterGroup(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {})
 	mux := NewRouter()
