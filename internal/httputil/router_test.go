@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestRouter_MethodSpoofingPrecedence(t *testing.T) {
+func TestRouter_methodSpoofingMethodPrecedence(t *testing.T) {
 	mux := NewRouter()
 	r := httptest.NewRequest(http.MethodPost, "/", nil)
 	rr := httptest.NewRecorder()
@@ -31,7 +31,7 @@ func TestRouter_MethodSpoofingPrecedence(t *testing.T) {
 	}
 }
 
-func TestRouter_MethodSpoofingUsingValueFromRequestBody(t *testing.T) {
+func TestRouter_methodSpoofingUsingValueFromRequestBody(t *testing.T) {
 	for _, tt := range []string{http.MethodDelete, http.MethodPatch, http.MethodPut} {
 		mux := NewRouter()
 		r := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -56,7 +56,7 @@ func TestRouter_MethodSpoofingUsingValueFromRequestBody(t *testing.T) {
 	}
 }
 
-func TestRouter_MethodSpoofingUsingHTTPHeader(t *testing.T) {
+func TestRouter_methodSpoofingUsingHTTPHeader(t *testing.T) {
 	for _, tt := range []string{http.MethodDelete, http.MethodPatch, http.MethodPut} {
 		mux := NewRouter()
 		r := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -81,7 +81,7 @@ func TestRouter_MethodSpoofingUsingHTTPHeader(t *testing.T) {
 	}
 }
 
-func TestRouterGroup(t *testing.T) {
+func TestRouter_routeGrouping(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {})
 	mux := NewRouter()
 	newMiddleware := func(value string) func(http.Handler) http.Handler {
