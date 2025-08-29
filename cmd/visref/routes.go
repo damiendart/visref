@@ -16,18 +16,18 @@ func (app *application) routes() http.Handler {
 
 	mux.UseGlobal(DefaultHeaders, app.logRequest)
 
-	mux.HandleFunc("GET /{$}", app.itemsIndexHandler)
+	mux.Handle("GET /{$}", app.itemsIndexHandler())
 	mux.Handle("GET /assets/", http.FileServer(http.FS(resources.Resources)))
 	mux.Handle("GET /items", http.RedirectHandler("/", http.StatusFound))
-	mux.HandleFunc("GET /items/{id}", app.itemsShowHandler)
-	mux.HandleFunc("GET /tags", app.tagsIndexHandler)
-	mux.HandleFunc("GET /tags/{tag}", app.tagsShowHandler)
+	mux.Handle("GET /items/{id}", app.itemsShowHandler())
+	mux.Handle("GET /tags", app.tagsIndexHandler())
+	mux.Handle("GET /tags/{tag}", app.tagsShowHandler())
 
 	mux.Group(
 		func(m httputil.SubRouter) {
-			m.HandleFunc("GET /items/add", app.itemsAddHandler)
-			m.HandleFunc("POST /items/add", app.itemsAddPostHandler)
-			m.HandleFunc("GET /tags/add", app.tagsAddHandler)
+			m.Handle("GET /items/add", app.itemsAddHandler())
+			m.Handle("POST /items/add", app.itemsAddPostHandler())
+			m.Handle("GET /tags/add", app.tagsAddHandler())
 		},
 	)
 

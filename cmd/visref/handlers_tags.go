@@ -5,18 +5,19 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+
+	"github.com/damiendart/visref/internal/httputil"
 )
 
-func (app *application) tagsAddHandler(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(w, "tagsAdd")
+func (app *application) tagsAddHandler() httputil.ChainableHandler {
+	return app.withText("tagsAdd", http.StatusOK)
 }
 
-func (app *application) tagsIndexHandler(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(w, "tagsIndex")
+func (app *application) tagsIndexHandler() httputil.ChainableHandler {
+	return app.withText("tagsIndex", http.StatusOK)
 }
 
-func (app *application) tagsShowHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "tagsShow: %v", r.PathValue("tag"))
+func (app *application) tagsShowHandler() httputil.ChainableHandler {
+	return app.withText("tagsShow", http.StatusOK)
 }
