@@ -27,7 +27,7 @@ tasks:
 
   clean:
     cmds:
-      - 'rm -fr .task cmd/visref/resources/assets/*.{css,js} visref node_modules'
+      - 'rm -fr .task bin cmd/visref/resources/assets/*.{css,js} visref node_modules'
       - 'go clean -testcache'
     desc: 'Delete all buildable files, caches, and third-party dependencies'
 
@@ -97,6 +97,7 @@ tasks:
   dependencies:
     cmds:
       - task: 'dependencies:javascript'
+      - task: 'dependencies:go'
     desc: 'Run third-party-dependency-installing-related tasks'
 
   dependencies:javascript:
@@ -107,6 +108,15 @@ tasks:
       CI: true
     desc: 'Install JavaScript dependencies'
 
+  dependencies:go:
+    cmds:
+      - 'mkdir -p {{.USER_WORKING_DIR}}/bin'
+      - 'go install golang.org/x/lint/golint@latest'
+      - 'go install honnef.co/go/tools/cmd/staticcheck@v0.6.1'
+    env:
+      GOBIN: '{{.USER_WORKING_DIR}}/bin'
+    desc: 'Install Go dependencies'
+
   lint:
     cmds:
       - task: 'lint:golint'
@@ -116,12 +126,12 @@ tasks:
 
   lint:golint:
     cmds:
-      - 'golint -set_exit_status {{catLines .GO_PACKAGES}}'
+      - 'bin/golint -set_exit_status {{catLines .GO_PACKAGES}}'
     desc: 'Lint Go files with Golint'
 
   lint:staticcheck:
     cmds:
-      - 'staticcheck {{catLines .GO_PACKAGES}}'
+      - 'bin/staticcheck {{catLines .GO_PACKAGES}}'
     desc: 'Lint Go files with Staticcheck'
 
   lint:vet:

@@ -3,6 +3,7 @@
 # please refer to the accompanying "LICENCE" file.
 
 .task/
+bin/
 cmd/visref/resources/assets/
 !cmd/visref/resources/assets/favicon.svg
 data/
