@@ -11,8 +11,8 @@ import (
 
 // A Router is a wrapper around http.ServeMux that adds support for
 // middleware functions. Middleware functions chains can be applied
-// globally for all requests, including those handled by http.ServeMux
-// (e.g. error handlers), and on registered routes.
+// globally for all requests, including those directly handled by
+// http.ServeMux (e.g. error handlers), and on registered routes.
 type Router struct {
 	globalMiddleware []func(http.Handler) http.Handler
 	routeMiddleware  []func(http.Handler) http.Handler
