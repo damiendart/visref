@@ -30,33 +30,23 @@
   }
 
   :where(a) {
+    color: inherit;
     font-weight: bold;
     text-decoration-line: none;
   }
 
   &__navigation {
-    align-items: center;
     display: flex;
     grid-area: navigation;
 
-    &__list {
-      display: flex;
-      flex-direction: row;
-      grid-area: navigation;
-      gap: variables.$base-line-height;
-      width: 100%;
+    & > .u-cluster {
+      --cluster-column-gap: #{variables.$base-line-height};
 
-      &__split {
-        margin-inline-start: auto;
-      }
+      flex-grow: 1;
     }
   }
 
   &__title {
     grid-area: title;
-
-    a {
-      color: inherit;
-    }
   }
 }

@@ -1,0 +1,15 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "../variables";
+
+.u-cluster {
+  align-items: var(--cluster-align-items, center);
+  column-gap: var(--cluster-column-gap, #{variables.$base-line-height * 0.5});
+  display: flex;
+  flex-direction: var(--cluster-flex-direction, row);
+  flex-wrap: var(--cluster-flex-wrap, wrap);
+  justify-content: var(--cluster-justify-contents, flex-start);
+  row-gap: var(--cluster-row-gap, #{variables.$base-line-height * 0.5});
+}

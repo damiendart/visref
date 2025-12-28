@@ -43,12 +43,6 @@
     margin-top: 0;
   }
 
-  &--condensed {
-    & > * {
-      --gap: #{variables.$base-line-height * 0.25};
-    }
-  }
-
   &--flex {
     display: flex;
     flex-direction: column;
