@@ -19,6 +19,11 @@
     margin-top: var(--gap);
   }
 
+  & > :where(* + &__sm),
+  & > :where(&__sm + *) {
+    margin-top: calc(var(--gap) * 0.5);
+  }
+
   & > :where(* + &__md),
   & > :where(&__md + *) {
     margin-top: calc(var(--gap) * 2);

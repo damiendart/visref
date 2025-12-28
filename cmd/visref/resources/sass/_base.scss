@@ -6,6 +6,7 @@
 @use "functions";
 @use "mixins";
 @use "variables";
+@use "utilities/shadow";
 @use "utilities/text";
 
 :root {
@@ -23,6 +24,9 @@
   --form-input-error-foreground-colour: #{variables.$colour-red-9};
   --form-input-foreground-colour: #{variables.$colour-base-black};
 
+  --message-banner-error-background-colour: #{variables.$colour-red-9};
+  --message-banner-error-foreground-colour: #{variables.$colour-base-white};
+
   --link-colour: #{variables.$colour-indigo-8};
   --outline-colour: currentColor;
   --shadow-colour: #{variables.$colour-base-black};
@@ -32,6 +36,8 @@
 }
 
 a {
+  font-weight: bold;
+
   &:active,
   &:hover,
   &:focus,
@@ -85,6 +91,14 @@ h1 {
   @extend .u-text-size-xl;
 }
 
+h2 {
+  @extend .u-text-size-lg;
+}
+
+h2 {
+  @extend .u-text-size-md;
+}
+
 hr[aria-hidden="true"] {
   display: none;
 }
@@ -104,7 +118,7 @@ textarea, {
   -webkit-appearance: none;
   appearance: none;
   border: functions.px-to-rem(2px) solid var(--form-input-foreground-colour);
-  border-radius: 0;
+  border-radius: variables.$base-line-height * 0.25;
   background: var(--form-input-background-colour);
   box-sizing: border-box;
   font-family: inherit;
@@ -113,6 +127,7 @@ textarea, {
   padding: variables.$base-line-height * 0.5;
   width: 100%;
 
+  &.is-invalid,
   &[aria-invalid="true"] {
     border-color: var(--form-error-foreground-colour);
   }

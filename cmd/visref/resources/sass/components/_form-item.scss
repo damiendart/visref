@@ -1,0 +1,25 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "../functions";
+@use "../variables";
+
+.form-item {
+  box-sizing: border-box;
+  scroll-margin-block: variables.$base-line-height * 0.25;
+
+  &:has(.input-error, .is-invalid, [aria-invalid]) {
+    border-inline-start: (variables.$base-line-height * 0.25) solid var(--form-input-error-foreground-colour);
+    padding-inline-start: variables.$base-line-height * 0.5;
+  }
+
+  &__error-message {
+    font-weight: bold;
+    color: var(--form-input-error-foreground-colour);
+  }
+
+  &__hint {
+    font-style: italic;
+  }
+}

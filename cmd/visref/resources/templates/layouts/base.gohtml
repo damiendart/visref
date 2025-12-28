@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/assets/favicon.svg" rel="icon" type="image/svg">
     <link href="/assets/style.css" rel="stylesheet">
-    <title>{{ template "title" . }} &mdash; visref</title>
+    <title>{{- template "title" . }} &mdash; visref</title>
   </head>
   <body class="u-stack">
     <div class="skip-links u-stack__cozy">
@@ -38,6 +38,8 @@
       <hr aria-hidden="true">
     </header>
 
+    {{ template "notifications" . }}
+
     <main class="u-content u-stack u-stack__lg" id="content">
       {{ template "main" . }}
     </main>
@@ -46,3 +48,5 @@
   </body>
   </html>
 {{ end }}
+
+{{ define "notifications"}}{{ end }}

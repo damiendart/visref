@@ -5,6 +5,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,10 +17,12 @@ import (
 	"github.com/damiendart/visref/internal/validator"
 )
 
-type itemAddForm struct {
+// ItemAddForm holds form values and errors for the form on the "Add a
+// Library Item" page.
+type ItemAddForm struct {
 	AlternativeText string
 	Description     string
-	validator.Validator
+	validator.FormValidator
 }
 
 func (app *application) itemsAddHandler() httputil.ChainableHandler {
@@ -28,22 +31,32 @@ func (app *application) itemsAddHandler() httputil.ChainableHandler {
 
 func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
-		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024*10)
+		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024*100)
 
 		err := r.ParseMultipartForm(1024 * 1024 * 10)
 		if err != nil {
 			return app.withError("itemsAddPost: %w: %w", err, errBadRequest)
 		}
 
-		form := itemAddForm{
-			AlternativeText: r.PostForm.Get("alternative_text"),
+		form := ItemAddForm{
+			AlternativeText: r.PostFormValue("alternative_text"),
 			Description:     r.PostFormValue("description"),
 		}
 
 		file, header, err := r.FormFile("media")
 		if err != nil {
-			return app.withError("itemsAddPost: %w: %w", err, errBadRequest)
+			if errors.Is(err, http.ErrMissingFile) {
+				form.AddError("media", "Provide a media file")
+			} else {
+				return app.withError("itemsAddPost: %w: %w", err, errBadRequest)
+			}
 		}
+
+		if form.HasErrors() {
+			return app.withTemplate("items_add.gohtml", &form, http.StatusUnprocessableEntity)
+		}
+
+		form.Check(header.Size <= 1024*1024*10, "media", "The media file must be 10 MB or smaller")
 
 		defer file.Close()
 
@@ -54,13 +67,19 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 		}
 
 		filetype := http.DetectContentType(buf)
+		form.Check(
+			filetype == "image/jpeg" || filetype == "image/png",
+			"media",
+			"The media file must be a supported file type",
+		)
+
 		_, err = file.Seek(0, io.SeekStart)
 		if err != nil {
 			return app.withError("itemsAddPost: %w", err)
 		}
 
 		if form.HasErrors() {
-			return app.withTemplate("items_add.gohtml", form, http.StatusUnprocessableEntity)
+			return app.withTemplate("items_add.gohtml", &form, http.StatusUnprocessableEntity)
 		}
 
 		m := library.Item{

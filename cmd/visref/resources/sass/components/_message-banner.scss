@@ -1,0 +1,25 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "../variables";
+
+.message-banner {
+  border-radius: variables.$base-line-height * 0.25;
+  box-sizing: border-box;
+  display: block;
+  padding: variables.$base-line-height;
+
+  &[hidden] {
+    display: none;
+  }
+
+  :where(a) {
+    --link-colour: currentColor;
+  }
+
+  &--error {
+    background: var(--message-banner-error-background-colour);
+    color: var(--message-banner-error-foreground-colour);
+  }
+}

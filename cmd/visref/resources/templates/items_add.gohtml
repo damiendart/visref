@@ -4,30 +4,64 @@
   please refer to the accompanying "LICENCE" file.
 */}}
 
-{{ define "title" }}Add Library Item{{ end }}
+{{/* gotype: github.com/damiendart/visref/cmd/visref.ItemAddForm */}}
+
+{{ define "title" -}}
+  {{ if .FormValidator.HasErrors }}Error: {{ end }}Add a Library Item
+{{- end }}
+
+{{ define "notifications" }}
+  {{ if .FormValidator.HasErrors }}
+    <div class="u-content u-stack__lg">
+      <message-banner aria-labelledby="flash-error" class="message-banner message-banner--error u-content__wide" role="alert">
+        <div class="u-content__wide u-stack">
+          <h2 class="u-text-size-md u-stack__sm" id="flash-error">There is a problem</h2>
+
+          {{ with .FormValidator.Errors.media }}
+            <p><a href="#media">{{ . }}</a></p>
+          {{ end }}
+        </div>
+      </message-banner>
+    </div>
+  {{ end }}
+{{ end }}
 
 {{ define "main" }}
-  <h1 class="u-content__wide u-stack__lg">Add a library item</h1>
-  <form action="/items/add" class="u-content u-stack" enctype="multipart/form-data" method="post">
-    <div class="media-dropzone u-content__wide u-stack u-stack__lg u-stack--condensed">
-      <label for="media">Media</label>
-      <input id="media" name="media" type="file">
-      {{ with .FieldErrors.media }}
-        <p>{{ . }}</p>
+  <h1 class="u-content__wide u-stack__lg">Add a Library Item</h1>
+
+  <form action="/items/add" class="u-content u-stack" enctype="multipart/form-data" method="post" novalidate>
+    <div class="form-item u-content__wide u-stack u-stack__lg">
+      <label class="u-stack__cozy" for="media" id="media-label">Media</label>
+
+      {{ with .FormValidator.Errors.media }}
+        <p class="form-item__error-message u-stack__cozy" id="media-error"><span class="u-visually-hidden">Error: </span>{{ . }}</p>
       {{ end }}
+
+      <p class="form-item__hint u-stack__cozy" id="media-hint">Supported file types: JPEG and PNG; Maximum file size 10MB</p>
+
+      <div class="media-dropzone u-stack__sm">
+        <input
+          {{ with .FormValidator.Errors.media }}
+            aria-describedby="media-label media-error media-hint"
+            class="is-invalid"
+          {{ else }}
+            aria-describedby="media-hint"
+          {{ end }}
+          id="media"
+          name="media"
+          type="file"
+        >
+      </div>
     </div>
 
-    <div class="u-stack u-stack__md u-stack--condensed">
-      <label for="alternative_text">Alternative Text</label>
-      <input id="alternative_text" name="alternative_text" type="text" value="{{ .AlternativeText }}">
-      {{ with .FieldErrors.alternative_text }}
-        <p>{{ . }}</p>
-      {{ end }}
+    <div class="form-item u-stack u-stack__md">
+      <label class="u-stack__cozy" for="alternative-text" id="alternative-text-label">Alternative Text</label>
+      <input class="u-stack__sm" id="alternative-text" name="alternative_text" type="text" value="{{ .AlternativeText }}">
     </div>
 
-    <div class="u-stack u-stack__md u-stack--condensed">
-      <label for="description">Description</label>
-      <textarea id="description" name="description">{{ .Description }}</textarea>
+    <div class="form-item u-stack u-stack__md">
+      <label class="u-stack__cozy" for="description" id="description-label">Description</label>
+      <textarea class="u-stack__sm" id="description" name="description">{{ .Description }}</textarea>
     </div>
 
     <div class="u-stack__lg">
