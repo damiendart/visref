@@ -21,6 +21,7 @@ import (
 // Library Item" page.
 type ItemAddForm struct {
 	AlternativeText string
+	Source          string
 	Description     string
 	validator.FormValidator
 }
@@ -40,6 +41,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 
 		form := ItemAddForm{
 			AlternativeText: r.PostFormValue("alternative_text"),
+			Source:          r.PostFormValue("source"),
 			Description:     r.PostFormValue("description"),
 		}
 
@@ -84,6 +86,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 
 		m := library.Item{
 			AlternativeText:  form.AlternativeText,
+			Source:           form.Source,
 			Description:      form.Description,
 			MimeType:         filetype,
 			OriginalFilename: header.Filename,

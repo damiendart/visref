@@ -22,6 +22,7 @@ import (
 type Item struct {
 	ID               uuid.UUID
 	AlternativeText  string
+	Source           string
 	Description      string
 	MimeType         string
 	Filepath         string
@@ -89,9 +90,10 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 
 	_, err = tx.ExecContext(
 		ctx,
-		`INSERT INTO items (id, alternative_text, description, mime_type, filepath, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO items (id, alternative_text, source, description, mime_type, filepath, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		u,
 		item.AlternativeText,
+		item.Source,
 		item.Description,
 		item.MimeType,
 		filepath.Join(
@@ -130,7 +132,7 @@ func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) 
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, `SELECT id, alternative_text, description, mime_type, filepath, original_filename, created_at, updated_at FROM items WHERE id = ?`, id.String())
+	rows, err := tx.QueryContext(ctx, `SELECT id, alternative_text, source, description, mime_type, filepath, original_filename, created_at, updated_at FROM items WHERE id = ?`, id.String())
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +145,7 @@ func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) 
 		if err := rows.Scan(
 			&item.ID,
 			&item.AlternativeText,
+			&item.Source,
 			&item.Description,
 			&item.MimeType,
 			&item.Filepath,

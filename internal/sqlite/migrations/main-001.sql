@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS items (
   id TEXT PRIMARY KEY,
   alternative_text TEXT,
+  source TEXT,
   description TEXT,
   mime_type TEXT NOT NULL,
   filepath TEXT NOT NULL,
