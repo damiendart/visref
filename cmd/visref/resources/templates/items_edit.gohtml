@@ -1,0 +1,47 @@
+{{/*
+  Copyright (C) Damien Dart, <damiendart@pobox.com>.
+  This file is distributed under the MIT licence. For more information,
+  please refer to the accompanying "LICENCE" file.
+*/}}
+
+{{/* gotype: github.com/damiendart/visref/cmd/visref.ItemsEditTemplateData */}}
+
+{{ define "title" -}}
+  Edit Library Item
+{{- end }}
+
+{{ define "main" }}
+  <div class="u-cluster u-content__wide u-stack__lg">
+    <h1>Edit Library Item</h1>
+    <a class="button button--condensed u-margin-left-auto" download="{{ .Item.OriginalFilename }}" href="/items/{{ .Item.ID }}?download=1">Download original</a>
+  </div>
+
+  <form action="/items/{{ .Item.ID }}" class="u-content u-stack" method="post" novalidate>
+    <div class="u-content__wide u-stack u-stack__lg">
+      <div class="media-dropzone media-dropzone--taller">
+        <img alt="{{ .Item.AlternativeText }}" src="/items/{{ .Item.ID }}?download=1">
+      </div>
+    </div>
+
+    <div class="form-item u-stack u-stack__md">
+      <label class="u-stack__cozy" for="alternative-text" id="alternative-text-label">Alternative Text</label>
+      <input class="u-stack__sm" id="alternative-text" name="alternative_text" type="text" value="{{ .Form.AlternativeText }}">
+    </div>
+
+    <div class="form-item u-stack u-stack__md">
+      <label class="u-stack__cozy" for="source" id="source-text-label">Source</label>
+      <input class="u-stack__sm" id="source" name="source" type="text" value="{{ .Form.Source }}">
+    </div>
+
+    <div class="form-item u-stack u-stack__md">
+      <label class="u-stack__cozy" for="description" id="description-label">Description</label>
+      <textarea class="u-stack__sm" id="description" name="description">{{ .Form.Description }}</textarea>
+    </div>
+
+    <div class="u-cluster u-stack__lg">
+      <input class="button" type="submit" value="Update item">
+    </div>
+
+    <input name="_method" type="hidden" value="PATCH">
+  </form>
+{{ end }}

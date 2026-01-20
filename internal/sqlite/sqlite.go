@@ -67,6 +67,18 @@ func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	return &Tx{tx, db.Now().UTC().Truncate(time.Second)}, nil
 }
 
+// QueryContext executes a query that returns rows using the read-only
+// database connection.
+func (db *DB) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	return db.readOnlyPool.QueryContext(ctx, query, args...)
+}
+
+// QueryRowContext executes a query that is expected to return at most
+// one row using the read-only database connection.
+func (db *DB) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+	return db.readOnlyPool.QueryRowContext(ctx, query, args...)
+}
+
 // Open opens reading and writing database connections and executes any
 // outstanding database migrations.
 func (db *DB) Open() (err error) {

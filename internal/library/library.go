@@ -59,8 +59,14 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 	now := tx.Now
 
 	ext, err := mime.ExtensionsByType(item.MimeType)
+
 	if err != nil {
 		return err
+	}
+
+	// TODO: Document this weird behaviour.
+	if ext[0] == ".jpe" {
+		ext[0] = ".jpg"
 	}
 
 	err = os.MkdirAll(
@@ -127,48 +133,40 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 
 // GetItemByID retrieves a library item by ID.
 func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) {
-	tx, err := s.db.BeginTx(ctx, nil)
-	if err != nil {
+	row := s.db.QueryRowContext(
+		ctx,
+		`SELECT
+			id,
+			alternative_text,
+			source,
+			description,
+			mime_type,
+			filepath,
+			original_filename,
+			created_at,
+			updated_at
+		FROM items
+		WHERE id = ?`,
+		id.String(),
+	)
+
+	var item Item
+
+	if err := row.Scan(
+		&item.ID,
+		&item.AlternativeText,
+		&item.Source,
+		&item.Description,
+		&item.MimeType,
+		&item.Filepath,
+		&item.OriginalFilename,
+		(*sqlite.NullTime)(&item.CreatedAt),
+		(*sqlite.NullTime)(&item.UpdatedAt),
+	); err != nil {
 		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, `SELECT id, alternative_text, source, description, mime_type, filepath, original_filename, created_at, updated_at FROM items WHERE id = ?`, id.String())
-	if err != nil {
-		return nil, err
-	}
-
-	items := make([]*Item, 0)
-
-	for rows.Next() {
-		var item Item
-
-		if err := rows.Scan(
-			&item.ID,
-			&item.AlternativeText,
-			&item.Source,
-			&item.Description,
-			&item.MimeType,
-			&item.Filepath,
-			&item.OriginalFilename,
-			(*sqlite.NullTime)(&item.CreatedAt),
-			(*sqlite.NullTime)(&item.UpdatedAt),
-		); err != nil {
-			return nil, err
-		}
-
-		items = append(items, &item)
-	}
-
-	err = rows.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	if len(items) == 0 {
-		return nil, fmt.Errorf("unable to find item %q", id)
-	}
-
-	return items[0], nil
+	return &item, nil
 }
 
 // GetOriginalFileByItem returns the original uploaded file for an item.
@@ -179,4 +177,58 @@ func (s *Service) GetOriginalFileByItem(item *Item) (io.ReadSeeker, error) {
 	}
 
 	return f, nil
+}
+
+// PatchItem updates a library item.
+func (s *Service) PatchItem(
+	ctx context.Context,
+	item *Item,
+	alternativeText string,
+	source string,
+	description string,
+) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	row := tx.QueryRowContext(
+		ctx,
+		`
+			UPDATE items
+			SET
+				alternative_text = ?,
+				source = ?,
+				description = ?,
+				updated_at = ?
+			WHERE id = ?
+			RETURNING alternative_text, source, description, updated_at`,
+		alternativeText,
+		source,
+		description,
+		(*sqlite.NullTime)(&now),
+		item.ID.String(),
+	)
+
+	if err := row.Scan(
+		&item.AlternativeText,
+		&item.Source,
+		&item.Description,
+		(*sqlite.NullTime)(&item.UpdatedAt),
+	); err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		rollbackErr := tx.Rollback()
+		if rollbackErr != nil {
+			return rollbackErr
+		}
+
+		return err
+	}
+
+	return nil
 }

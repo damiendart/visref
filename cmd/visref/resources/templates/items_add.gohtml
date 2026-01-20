@@ -4,20 +4,20 @@
   please refer to the accompanying "LICENCE" file.
 */}}
 
-{{/* gotype: github.com/damiendart/visref/cmd/visref.ItemAddForm */}}
+{{/* gotype: github.com/damiendart/visref/cmd/visref.ItemsAddTemplateData */}}
 
 {{ define "title" -}}
-  {{ if .FormValidator.HasErrors }}Error: {{ end }}Add a Library Item
+  {{ if .Form.Validator.HasErrors }}Error: {{ end }}Add a Library Item
 {{- end }}
 
 {{ define "notifications" }}
-  {{ if .FormValidator.HasErrors }}
+  {{ if .Form.Validator.HasErrors }}
     <div class="u-content u-stack__lg">
       <message-banner aria-labelledby="flash-error" class="message-banner message-banner--error u-content__wide" role="alert">
         <div class="u-content__wide u-stack">
           <h2 class="u-text-size-md u-stack__sm" id="flash-error">There is a problem</h2>
 
-          {{ with .FormValidator.Errors.media }}
+          {{ with .Form.Validator.Errors.media }}
             <p><a href="#media">{{ . }}</a></p>
           {{ end }}
         </div>
@@ -33,7 +33,7 @@
     <div class="form-item u-content__wide u-stack u-stack__lg">
       <label class="u-stack__cozy" for="media" id="media-label">Media</label>
 
-      {{ with .FormValidator.Errors.media }}
+      {{ with .Form.Validator.Errors.media }}
         <p class="form-item__error-message u-stack__cozy" id="media-error"><span class="u-visually-hidden">Error: </span>{{ . }}</p>
       {{ end }}
 
@@ -41,7 +41,7 @@
 
       <div class="media-dropzone u-stack__sm">
         <input
-          {{ with .FormValidator.Errors.media }}
+          {{ with .Form.Validator.Errors.media }}
             aria-describedby="media-label media-error media-hint"
             class="is-invalid"
           {{ else }}
@@ -56,17 +56,17 @@
 
     <div class="form-item u-stack u-stack__md">
       <label class="u-stack__cozy" for="alternative-text" id="alternative-text-label">Alternative Text</label>
-      <input class="u-stack__sm" id="alternative-text" name="alternative_text" type="text" value="{{ .AlternativeText }}">
+      <input class="u-stack__sm" id="alternative-text" name="alternative_text" type="text" value="{{ .Form.AlternativeText }}">
     </div>
 
     <div class="form-item u-stack u-stack__md">
       <label class="u-stack__cozy" for="source" id="source-text-label">Source</label>
-      <input class="u-stack__sm" id="source" name="source" type="text" value="{{ .Source }}">
+      <input class="u-stack__sm" id="source" name="source" type="text" value="{{ .Form.Source }}">
     </div>
 
     <div class="form-item u-stack u-stack__md">
       <label class="u-stack__cozy" for="description" id="description-label">Description</label>
-      <textarea class="u-stack__sm" id="description" name="description">{{ .Description }}</textarea>
+      <textarea class="u-stack__sm" id="description" name="description">{{ .Form.Description }}</textarea>
     </div>
 
     <div class="u-stack__lg">

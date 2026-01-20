@@ -17,13 +17,23 @@ import (
 	"github.com/damiendart/visref/internal/validator"
 )
 
-// ItemAddForm holds form values and errors for the form on the "Add a
-// Library Item" page.
-type ItemAddForm struct {
+// ItemForm holds form values and errors.
+type ItemForm struct {
 	AlternativeText string
 	Source          string
 	Description     string
-	validator.FormValidator
+	Validator       validator.FormValidator
+}
+
+// ItemsAddTemplateData is data to be passed to "items_add.gohtml".
+type ItemsAddTemplateData struct {
+	Form *ItemForm
+}
+
+// ItemsEditTemplateData is data to be passed to "items_edit.gohtml".
+type ItemsEditTemplateData struct {
+	Item library.Item
+	Form *ItemForm
 }
 
 func (app *application) itemsAddHandler() httputil.ChainableHandler {
@@ -39,7 +49,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			return app.withError("itemsAddPost: %w: %w", err, errBadRequest)
 		}
 
-		form := ItemAddForm{
+		form := ItemForm{
 			AlternativeText: r.PostFormValue("alternative_text"),
 			Source:          r.PostFormValue("source"),
 			Description:     r.PostFormValue("description"),
@@ -48,17 +58,21 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 		file, header, err := r.FormFile("media")
 		if err != nil {
 			if errors.Is(err, http.ErrMissingFile) {
-				form.AddError("media", "Provide a media file")
+				form.Validator.AddError("media", "Provide a media file")
 			} else {
 				return app.withError("itemsAddPost: %w: %w", err, errBadRequest)
 			}
 		}
 
-		if form.HasErrors() {
-			return app.withTemplate("items_add.gohtml", &form, http.StatusUnprocessableEntity)
+		if form.Validator.HasErrors() {
+			return app.withTemplate(
+				"items_add.gohtml",
+				ItemsAddTemplateData{&form},
+				http.StatusUnprocessableEntity,
+			)
 		}
 
-		form.Check(header.Size <= 1024*1024*10, "media", "The media file must be 10 MB or smaller")
+		form.Validator.Check(header.Size <= 1024*1024*10, "media", "The media file must be 10 MB or smaller")
 
 		defer file.Close()
 
@@ -69,7 +83,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 		}
 
 		filetype := http.DetectContentType(buf)
-		form.Check(
+		form.Validator.Check(
 			filetype == "image/jpeg" || filetype == "image/png",
 			"media",
 			"The media file must be a supported file type",
@@ -80,8 +94,12 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			return app.withError("itemsAddPost: %w", err)
 		}
 
-		if form.HasErrors() {
-			return app.withTemplate("items_add.gohtml", &form, http.StatusUnprocessableEntity)
+		if form.Validator.HasErrors() {
+			return app.withTemplate(
+				"items_add.gohtml",
+				ItemsAddTemplateData{&form},
+				http.StatusUnprocessableEntity,
+			)
 		}
 
 		m := library.Item{
@@ -105,7 +123,7 @@ func (app *application) itemsIndexHandler() httputil.ChainableHandler {
 	return app.withTemplate("index.gohtml", nil, http.StatusOK)
 }
 
-func (app *application) itemsShowHandler() httputil.ChainableHandler {
+func (app *application) itemsPatchHandler() httputil.ChainableHandler {
 	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
 		id, err := uuid.Parse(r.PathValue("id"))
 		if err != nil {
@@ -117,6 +135,52 @@ func (app *application) itemsShowHandler() httputil.ChainableHandler {
 			return app.withError("itemShow: %w", errNotFound)
 		}
 
+		err = r.ParseForm()
+		if err != nil {
+			return app.withError("itemsAddPost: %w: %w", err, errBadRequest)
+		}
+
+		form := ItemForm{
+			AlternativeText: r.PostFormValue("alternative_text"),
+			Source:          r.PostFormValue("source"),
+			Description:     r.PostFormValue("description"),
+		}
+
+		err = app.LibraryService.PatchItem(
+			r.Context(),
+			item,
+			form.AlternativeText,
+			form.Source,
+			form.Description,
+		)
+		if err != nil {
+			return app.withError("%w", err)
+		}
+
+		if form.Validator.HasErrors() {
+			return app.withTemplate(
+				"items_edit.gohtml",
+				ItemsEditTemplateData{*item, &form},
+				http.StatusUnprocessableEntity,
+			)
+		}
+
+		return app.withRedirect(fmt.Sprintf("/items/%s", item.ID), http.StatusSeeOther)
+	}
+}
+
+func (app *application) itemsShowHandler() httputil.ChainableHandler {
+	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			return app.withError("itemShow: %w", errNotFound)
+		}
+
+		item, err := app.LibraryService.GetItemByID(r.Context(), id)
+		if err != nil {
+			return app.withError("itemShow: %w", err)
+		}
+
 		if r.URL.Query().Get("download") == "1" {
 			f, err := app.LibraryService.GetOriginalFileByItem(item)
 			if err != nil {
@@ -126,6 +190,15 @@ func (app *application) itemsShowHandler() httputil.ChainableHandler {
 			return app.withContent(item.OriginalFilename, item.CreatedAt, f)
 		}
 
-		return app.withText(fmt.Sprintf("itemsShow: %v", item), http.StatusOK)
+		return app.withTemplate(
+			"items_edit.gohtml",
+			ItemsEditTemplateData{
+				*item,
+				&ItemForm{
+					AlternativeText: item.AlternativeText,
+					Source:          item.Source,
+					Description:     item.Description,
+				},
+			}, http.StatusOK)
 	}
 }

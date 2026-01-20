@@ -10,11 +10,26 @@
   border-radius: variables.$base-line-height * 0.25;
   box-sizing: border-box;
   background: var(--form-input-background-colour);
-  min-height: functions.px-to-rem(250px);
+  height: functions.px-to-rem(250px);
+  overflow: hidden;
   padding: variables.$base-line-height * 0.5;
   width: 100%;
 
   &:has(.is-invalid) {
     border-color: var(--form-input-error-foreground-colour);
+  }
+
+  &:has(img:only-child, picture:only-child) {
+    padding: 0;
+
+    img {
+      height: 100%;
+      object-fit: contain;
+      width: 100%;
+    }
+  }
+
+  &--taller {
+    height: functions.px-to-rem(500px);
   }
 }

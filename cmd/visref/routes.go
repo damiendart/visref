@@ -27,6 +27,7 @@ func (app *application) routes() http.Handler {
 		func(m httputil.SubRouter) {
 			m.Handle("GET /items/add", app.itemsAddHandler())
 			m.Handle("POST /items/add", app.itemsAddPostHandler())
+			m.Handle("PATCH /items/{id}", app.itemsPatchHandler())
 			m.Handle("GET /tags/add", app.tagsAddHandler())
 		},
 	)
