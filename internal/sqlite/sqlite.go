@@ -6,37 +6,28 @@ package sqlite
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
-	"fmt"
-	"io/fs"
 	"log/slog"
 	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
-	"sort"
 	"time"
 
 	// This package is only imported for its side effect of registering
 	// the "sqlite3" driver for use with the "database/sql" package.
 	_ "github.com/mattn/go-sqlite3"
-
-	"github.com/damiendart/visref/internal/sqlite/migrations"
 )
 
-// DB represents an SQLite database connection.
+// DB represents an SQLite database.
 type DB struct {
 	logger        *slog.Logger
-	migrations    fs.FS
+	migrateFunc   func(*DB) error
 	path          string
 	readOnlyPool  *sql.DB
 	readWritePool *sql.DB
 	Now           func() time.Time
-}
-
-// MainDB represents the main database where permanent data is stored.
-type MainDB struct {
-	DB
 }
 
 // Tx provides a sql.Tx and a transaction start timestamp.
@@ -45,19 +36,8 @@ type Tx struct {
 	Now time.Time
 }
 
-// NewMainDB returns a new instance of DB for the main database.
-func NewMainDB(path string, logger *slog.Logger) *MainDB {
-	return &MainDB{
-		DB{
-			logger:     logger,
-			migrations: migrations.MainDBMigrations,
-			path:       path,
-			Now:        time.Now,
-		},
-	}
-}
-
-// BeginTx starts a transaction.
+// BeginTx starts a transaction using the read-write database connection
+// and returns a Tx.
 func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	tx, err := db.readWritePool.BeginTx(ctx, opts)
 	if err != nil {
@@ -67,32 +47,24 @@ func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	return &Tx{tx, db.Now().UTC().Truncate(time.Second)}, nil
 }
 
-// QueryContext executes a query that returns rows using the read-only
-// database connection.
-func (db *DB) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
-	return db.readOnlyPool.QueryContext(ctx, query, args...)
-}
-
-// QueryRowContext executes a query that is expected to return at most
-// one row using the read-only database connection.
-func (db *DB) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
-	return db.readOnlyPool.QueryRowContext(ctx, query, args...)
-}
-
 // Open opens reading and writing database connections and executes any
-// outstanding database migrations.
+// database migrations.
 func (db *DB) Open() (err error) {
-	if db.path == "" {
-		db.path = ":memory:"
-	}
+	dsnParams := url.Values{}
 
-	if db.path != ":memory:" {
+	// Allow two or more distinct but shareable in-memory databases to
+	// run in a single process. For more information, please see
+	// <https://www.sqlite.org/inmemorydb.html#sharedmemdb>.
+	if db.path == "" || db.path == ":memory:" {
+		db.path = "memory_database_" + rand.Text()
+
+		dsnParams.Add("cache", "shared")
+		dsnParams.Add("mode", "memory")
+	} else {
 		if err := os.MkdirAll(filepath.Dir(db.path), 0700); err != nil {
 			return err
 		}
 	}
-
-	dsnParams := url.Values{}
 
 	dsnParams.Add("_busy_timeout", "5000")
 	dsnParams.Add("_cache_size", "1000000000")
@@ -100,10 +72,6 @@ func (db *DB) Open() (err error) {
 	dsnParams.Add("_journal_mode", "WAL")
 	dsnParams.Add("_synchronous", "NORMAL")
 	dsnParams.Add("_txlock", "immediate")
-
-	if db.path == ":memory:" {
-		dsnParams.Add("cache", "shared")
-	}
 
 	dsn := "file:" + db.path + "?" + dsnParams.Encode()
 
@@ -118,6 +86,8 @@ func (db *DB) Open() (err error) {
 		return err
 	}
 
+	dsnParams.Add("mode", "ro")
+
 	db.readOnlyPool, err = sql.Open("sqlite3", dsn)
 	if err != nil {
 		return err
@@ -129,7 +99,7 @@ func (db *DB) Open() (err error) {
 		return err
 	}
 
-	err = db.migrate()
+	err = db.migrateFunc(db)
 	if err != nil {
 		return err
 	}
@@ -137,56 +107,14 @@ func (db *DB) Open() (err error) {
 	return nil
 }
 
-func (db *DB) migrate() error {
-	var version int
+// QueryContext executes a query that returns rows using the read-only
+// database connection.
+func (db *DB) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	return db.readOnlyPool.QueryContext(ctx, query, args...)
+}
 
-	files, err := fs.Glob(db.migrations, "*.sql")
-	if err != nil {
-		return err
-	}
-	sort.Strings(files)
-
-	err = db.readOnlyPool.QueryRow("PRAGMA user_version").Scan(&version)
-	if err != nil {
-		return err
-	}
-
-	if version >= len(files) {
-		return nil
-	}
-
-	for i, name := range files[version:] {
-		contents, err := fs.ReadFile(db.migrations, name)
-		if err != nil {
-			return err
-		}
-
-		tx, err := db.readWritePool.Begin()
-		if err != nil {
-			return err
-		}
-
-		if _, err = tx.Exec(string(contents)); err != nil {
-			rollbackErr := tx.Rollback()
-			if rollbackErr != nil {
-				return rollbackErr
-			}
-
-			return err
-		}
-
-		_, err = tx.Exec(fmt.Sprintf("PRAGMA user_version = %d", version+i+1))
-		if err != nil {
-			return err
-		}
-
-		err = tx.Commit()
-		if err != nil {
-			return err
-		}
-
-		db.logger.Info("database migration completed", slog.Group("migration", "file", name))
-	}
-
-	return nil
+// QueryRowContext executes a query that is expected to return at most
+// one row using the read-only database connection.
+func (db *DB) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+	return db.readOnlyPool.QueryRowContext(ctx, query, args...)
 }
