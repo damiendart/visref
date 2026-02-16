@@ -2,7 +2,7 @@
 # This file is distributed under the MIT licence. For more information,
 # please refer to the accompanying "LICENCE" file.
 
-FROM golang:1.24.4-alpine AS build
+FROM golang:1.26.0-alpine AS build
 RUN apk add build-base git nodejs upx go-task
 WORKDIR /build
 COPY . .
