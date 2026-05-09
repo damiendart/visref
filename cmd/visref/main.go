@@ -58,6 +58,12 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
+	mr, err := os.OpenRoot(mediaDir)
+	if err != nil {
+		return err
+	}
+	defer mr.Close()
+
 	templateCache, err := resources.NewTemplateCache()
 	if err != nil {
 		return err
@@ -71,7 +77,7 @@ func run(logger *slog.Logger) error {
 	app := &application{
 		config:         cfg,
 		logger:         logger,
-		LibraryService: library.NewService(&mainDatabase.DB, mediaDir),
+		LibraryService: library.NewService(&mainDatabase.DB, mr),
 		templateCache:  templateCache,
 	}
 

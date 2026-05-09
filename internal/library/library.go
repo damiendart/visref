@@ -35,13 +35,13 @@ type Item struct {
 // items. Files are stored on the local filesystem and metadata is
 // stored in an accompanying SQLite database.
 type Service struct {
-	db       *sqlite.DB
-	mediaDir string
+	db        *sqlite.DB
+	mediaRoot *os.Root
 }
 
 // NewService returns a new [Service].
-func NewService(db *sqlite.DB, mediaDir string) *Service {
-	return &Service{db, mediaDir}
+func NewService(db *sqlite.DB, mediaRoot *os.Root) *Service {
+	return &Service{db, mediaRoot}
 }
 
 // CreateItem stores a new [Item].
@@ -69,17 +69,13 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		ext[0] = ".jpg"
 	}
 
-	err = os.MkdirAll(
-		filepath.Join(s.mediaDir, now.Format("2006/01")),
-		0700,
-	)
+	err = s.mediaRoot.MkdirAll(now.Format("2006/01"), 0700)
 	if err != nil {
 		return err
 	}
 
-	dst, err := os.Create(
+	dst, err := s.mediaRoot.Create(
 		filepath.Join(
-			s.mediaDir,
 			now.Format("2006/01"),
 			fmt.Sprintf("%s%s", u.String(), ext[0]),
 		),
@@ -171,7 +167,7 @@ func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) 
 
 // GetOriginalFileByItem returns the original uploaded file for an item.
 func (s *Service) GetOriginalFileByItem(item *Item) (io.ReadSeeker, error) {
-	f, err := os.Open(filepath.Join(s.mediaDir, item.Filepath))
+	f, err := s.mediaRoot.Open(item.Filepath)
 	if err != nil {
 		return nil, err
 	}
