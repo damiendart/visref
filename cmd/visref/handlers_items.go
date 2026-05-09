@@ -199,6 +199,8 @@ func (app *application) itemsShowHandler() httputil.ChainableHandler {
 					Source:          item.Source,
 					Description:     item.Description,
 				},
-			}, http.StatusOK)
+			},
+			http.StatusOK,
+		)
 	}
 }
