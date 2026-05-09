@@ -77,8 +77,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 		defer file.Close()
 
 		buf := make([]byte, 512)
-		_, err = file.Read(buf)
-		if err != nil {
+		if _, err = file.Read(buf); err != nil {
 			return app.withError("itemsAddPost: %w", err)
 		}
 
@@ -89,8 +88,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			"The media file must be a supported file type",
 		)
 
-		_, err = file.Seek(0, io.SeekStart)
-		if err != nil {
+		if _, err = file.Seek(0, io.SeekStart); err != nil {
 			return app.withError("itemsAddPost: %w", err)
 		}
 
@@ -110,8 +108,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			OriginalFilename: header.Filename,
 		}
 
-		err = app.LibraryService.CreateItem(r.Context(), &m, file)
-		if err != nil {
+		if err = app.LibraryService.CreateItem(r.Context(), &m, file); err != nil {
 			return app.withError("%w", err)
 		}
 
@@ -135,8 +132,7 @@ func (app *application) itemsPatchHandler() httputil.ChainableHandler {
 			return app.withError("itemShow: %w", errNotFound)
 		}
 
-		err = r.ParseForm()
-		if err != nil {
+		if err = r.ParseForm(); err != nil {
 			return app.withError("itemsAddPost: %w: %w", err, errBadRequest)
 		}
 
@@ -146,14 +142,13 @@ func (app *application) itemsPatchHandler() httputil.ChainableHandler {
 			Description:     r.PostFormValue("description"),
 		}
 
-		err = app.LibraryService.PatchItem(
+		if err = app.LibraryService.PatchItem(
 			r.Context(),
 			item,
 			form.AlternativeText,
 			form.Source,
 			form.Description,
-		)
-		if err != nil {
+		); err != nil {
 			return app.withError("%w", err)
 		}
 

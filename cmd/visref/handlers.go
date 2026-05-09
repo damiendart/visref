@@ -23,6 +23,7 @@ var (
 func (app *application) withContent(name string, modtime time.Time, content io.ReadSeeker) httputil.ChainableHandler {
 	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
 		http.ServeContent(w, r, name, modtime, content)
+
 		return nil
 	}
 }
@@ -51,6 +52,7 @@ func (app *application) withError(format string, args ...any) httputil.Chainable
 func (app *application) withRedirect(url string, code int) httputil.ChainableHandler {
 	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
 		http.Redirect(w, r, url, code)
+
 		return nil
 	}
 }
@@ -63,8 +65,7 @@ func (app *application) withTemplate(template string, data any, code int) httput
 		}
 
 		buf := new(bytes.Buffer)
-		err := ts.ExecuteTemplate(buf, "base", data)
-		if err != nil {
+		if err := ts.ExecuteTemplate(buf, "base", data); err != nil {
 			return app.withError("template: %w", err)
 		}
 

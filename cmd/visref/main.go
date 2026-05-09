@@ -42,8 +42,7 @@ func init() {
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 
-	err := run(logger)
-	if err != nil {
+	if err := run(logger); err != nil {
 		trace := string(debug.Stack())
 		logger.Error(err.Error(), "trace", trace)
 		os.Exit(1)

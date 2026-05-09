@@ -35,10 +35,10 @@ func migrateMainDB(db *DB) error {
 	if err != nil {
 		return err
 	}
+
 	sort.Strings(files)
 
-	err = db.readOnlyPool.QueryRow("PRAGMA user_version").Scan(&version)
-	if err != nil {
+	if err = db.readOnlyPool.QueryRow("PRAGMA user_version").Scan(&version); err != nil {
 		return err
 	}
 
@@ -58,21 +58,18 @@ func migrateMainDB(db *DB) error {
 		}
 
 		if _, err = tx.Exec(string(contents)); err != nil {
-			rollbackErr := tx.Rollback()
-			if rollbackErr != nil {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
 				return rollbackErr
 			}
 
 			return err
 		}
 
-		_, err = tx.Exec(fmt.Sprintf("PRAGMA user_version = %d", version+i+1))
-		if err != nil {
+		if _, err = tx.Exec(fmt.Sprintf("PRAGMA user_version = %d", version+i+1)); err != nil {
 			return err
 		}
 
-		err = tx.Commit()
-		if err != nil {
+		if err = tx.Commit(); err != nil {
 			return err
 		}
 

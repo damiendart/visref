@@ -19,6 +19,7 @@ type NullTime time.Time
 func (n *NullTime) Scan(src any) error {
 	if src == nil {
 		*(*time.Time)(n) = time.Time{}
+
 		return nil
 	}
 

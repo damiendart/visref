@@ -81,8 +81,7 @@ func (db *DB) Open() (err error) {
 	}
 
 	db.readWritePool.SetMaxOpenConns(1)
-	_, err = db.readWritePool.Exec("PRAGMA temp_store = memory")
-	if err != nil {
+	if _, err = db.readWritePool.Exec("PRAGMA temp_store = memory"); err != nil {
 		return err
 	}
 
@@ -94,13 +93,11 @@ func (db *DB) Open() (err error) {
 	}
 
 	db.readOnlyPool.SetMaxOpenConns(max(4, runtime.NumCPU()))
-	_, err = db.readOnlyPool.Exec("PRAGMA temp_store = memory")
-	if err != nil {
+	if _, err = db.readOnlyPool.Exec("PRAGMA temp_store = memory"); err != nil {
 		return err
 	}
 
-	err = db.migrateFunc(db)
-	if err != nil {
+	if err = db.migrateFunc(db); err != nil {
 		return err
 	}
 

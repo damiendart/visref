@@ -56,10 +56,7 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		return err
 	}
 
-	now := tx.Now
-
 	ext, err := mime.ExtensionsByType(item.MimeType)
-
 	if err != nil {
 		return err
 	}
@@ -69,14 +66,13 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		ext[0] = ".jpg"
 	}
 
-	err = s.mediaRoot.MkdirAll(now.Format("2006/01"), 0700)
-	if err != nil {
+	if err := s.mediaRoot.MkdirAll(tx.Now.Format("2006/01"), 0700); err != nil {
 		return err
 	}
 
 	dst, err := s.mediaRoot.Create(
 		filepath.Join(
-			now.Format("2006/01"),
+			tx.Now.Format("2006/01"),
 			fmt.Sprintf("%s%s", u.String(), ext[0]),
 		),
 	)
@@ -85,8 +81,7 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 	}
 	defer dst.Close()
 
-	_, err = io.Copy(dst, file)
-	if err != nil {
+	if _, err = io.Copy(dst, file); err != nil {
 		return err
 	}
 
@@ -99,21 +94,19 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		item.Description,
 		item.MimeType,
 		filepath.Join(
-			now.Format("2006/01"),
+			tx.Now.Format("2006/01"),
 			fmt.Sprintf("%s%s", u.String(), ext[0]),
 		),
 		item.OriginalFilename,
-		(*sqlite.NullTime)(&now),
-		(*sqlite.NullTime)(&now),
+		(*sqlite.NullTime)(&tx.Now),
+		(*sqlite.NullTime)(&tx.Now),
 	)
 	if err != nil {
 		return err
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		rollbackErr := tx.Rollback()
-		if rollbackErr != nil {
+	if err = tx.Commit(); err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
 			return rollbackErr
 		}
 
@@ -121,8 +114,8 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 	}
 
 	item.ID = u
-	item.CreatedAt = now
-	item.UpdatedAt = now
+	item.CreatedAt = tx.Now
+	item.UpdatedAt = tx.Now
 
 	return nil
 }
@@ -188,7 +181,6 @@ func (s *Service) PatchItem(
 		return err
 	}
 
-	now := time.Now()
 	row := tx.QueryRowContext(
 		ctx,
 		`
@@ -203,7 +195,7 @@ func (s *Service) PatchItem(
 		alternativeText,
 		source,
 		description,
-		(*sqlite.NullTime)(&now),
+		(*sqlite.NullTime)(new(time.Now())),
 		item.ID.String(),
 	)
 
@@ -216,10 +208,8 @@ func (s *Service) PatchItem(
 		return err
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		rollbackErr := tx.Rollback()
-		if rollbackErr != nil {
+	if err = tx.Commit(); err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
 			return rollbackErr
 		}
 
