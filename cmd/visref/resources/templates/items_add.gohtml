@@ -31,7 +31,7 @@
 
   <form action="/items/add" class="u-content u-stack" enctype="multipart/form-data" method="post" novalidate>
     <div class="form-item u-content__wide u-stack u-stack__lg">
-      <label class="u-stack__cozy" for="media" id="media-label">Media</label>
+      <label class="u-stack__cozy" for="media" id="media-label">Media (Required)</label>
 
       {{ with .Form.Validator.Errors.media }}
         <p class="form-item__error-message u-stack__cozy" id="media-error"><span class="u-visually-hidden">Error: </span>{{ . }}</p>
@@ -49,6 +49,7 @@
           {{ end }}
           id="media"
           name="media"
+          required
           type="file"
         >
       </div>
