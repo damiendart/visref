@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log/slog"
 	"os"
@@ -44,7 +45,12 @@ func main() {
 
 	if err := run(logger); err != nil {
 		trace := string(debug.Stack())
-		logger.Error(err.Error(), "trace", trace)
+		logger.LogAttrs(
+			context.Background(),
+			slog.LevelError,
+			err.Error(),
+			slog.String("trace", trace),
+		)
 		os.Exit(1)
 	}
 }

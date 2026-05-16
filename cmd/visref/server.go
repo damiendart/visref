@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -17,7 +18,15 @@ func (app *application) serveHTTP() error {
 		Handler:  app.routes(),
 	}
 
-	app.logger.Info("starting server", slog.Group("server", "addr", srv.Addr))
+	app.logger.LogAttrs(
+		context.TODO(),
+		slog.LevelInfo,
+		"starting server",
+		slog.GroupAttrs(
+			"server",
+			slog.String("addr", srv.Addr),
+		),
+	)
 
 	return srv.ListenAndServe()
 }

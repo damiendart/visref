@@ -25,9 +25,16 @@ func DefaultHeaders(next http.Handler) http.Handler {
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			app.logger.Info(
+			app.logger.LogAttrs(
+				r.Context(),
+				slog.LevelInfo,
 				"access",
-				slog.Group("request", "method", r.Method, "proto", r.Proto, "url", r.URL.String()),
+				slog.GroupAttrs(
+					"request",
+					slog.String("method", r.Method),
+					slog.String("path", r.URL.String()),
+					slog.String("proto", r.Proto),
+				),
 			)
 
 			next.ServeHTTP(w, r)

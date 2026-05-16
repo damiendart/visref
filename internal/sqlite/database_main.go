@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -73,7 +74,12 @@ func migrateMainDB(db *DB) error {
 			return err
 		}
 
-		db.logger.Info("database migration completed", slog.Group("migration", "file", name))
+		db.logger.LogAttrs(
+			context.TODO(),
+			slog.LevelInfo,
+			"database migration completed",
+			slog.GroupAttrs("migration", slog.String("file", name)),
+		)
 	}
 
 	return nil
