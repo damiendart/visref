@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -38,7 +39,7 @@ func init() {
 	var printVersion bool
 
 	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
-	flag.StringVar(&cfg.dataDir, "data-dir", "data", "relative path to directory for storing application data")
+	flag.StringVar(&cfg.dataDir, "data-dir", "data", "path to directory for storing application data")
 	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
 	flag.BoolVar(&printVersion, "version", false, "print application version and exit")
 
@@ -79,25 +80,46 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	mediaDir := filepath.Join(dataDir, "media")
+	if _, err := os.Stat(dataDir); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			if err := os.Mkdir(dataDir, 0700); err != nil {
+				return err
+			}
 
-	err = os.MkdirAll(mediaDir, 0700)
+			logger.LogAttrs(
+				context.Background(),
+				slog.LevelInfo,
+				"created data directory",
+				slog.String("data_dir", dataDir),
+			)
+		} else {
+			return err
+		}
+	}
+
+	dataRoot, err := os.OpenRoot(dataDir)
+	if err != nil {
+		return err
+	}
+	defer dataRoot.Close()
+
+	err = dataRoot.MkdirAll("media", 0700)
 	if err != nil {
 		return err
 	}
 
-	mr, err := os.OpenRoot(mediaDir)
+	mediaRoot, err := dataRoot.OpenRoot("media")
 	if err != nil {
 		return err
 	}
-	defer mr.Close()
+	defer mediaRoot.Close()
 
 	templateCache, err := resources.NewTemplateCache()
 	if err != nil {
 		return err
 	}
 
-	mainDatabase := sqlite.NewMainDB(filepath.Join(cfg.dataDir, "main.db"), logger)
+	mainDatabase := sqlite.NewMainDB(filepath.Join(dataRoot.Name(), "main.db"), logger)
 	if err = mainDatabase.Open(); err != nil {
 		return err
 	}
@@ -116,7 +138,7 @@ func run(logger *slog.Logger) error {
 	app := &application{
 		config:         cfg,
 		logger:         logger,
-		LibraryService: library.NewService(&mainDatabase.DB, mr),
+		LibraryService: library.NewService(&mainDatabase.DB, mediaRoot),
 		templateCache:  templateCache,
 	}
 
