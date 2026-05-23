@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -31,13 +32,30 @@ type config struct {
 }
 
 var cfg config
+var version string
 
 func init() {
+	var printVersion bool
+
 	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
 	flag.StringVar(&cfg.dataDir, "data-dir", "data", "relative path to directory for storing application data")
 	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
+	flag.BoolVar(&printVersion, "version", false, "print application version and exit")
+
+	buildInfo, _ := debug.ReadBuildInfo()
+
+	if buildInfo.Main.Version != "" {
+		version = buildInfo.Main.Version
+	} else {
+		version = "unknown"
+	}
 
 	flag.Parse()
+
+	if printVersion {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 }
 
 func main() {
@@ -56,9 +74,14 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
-	mediaDir := filepath.Join(cfg.dataDir, "media")
+	dataDir, err := filepath.Abs(cfg.dataDir)
+	if err != nil {
+		return err
+	}
 
-	err := os.MkdirAll(mediaDir, 0700)
+	mediaDir := filepath.Join(dataDir, "media")
+
+	err = os.MkdirAll(mediaDir, 0700)
 	if err != nil {
 		return err
 	}
@@ -78,6 +101,17 @@ func run(logger *slog.Logger) error {
 	if err = mainDatabase.Open(); err != nil {
 		return err
 	}
+
+	logger.LogAttrs(
+		context.Background(),
+		slog.LevelInfo,
+		"starting application",
+		slog.GroupAttrs(
+			"application",
+			slog.String("version", version),
+			slog.String("data_dir", dataDir),
+		),
+	)
 
 	app := &application{
 		config:         cfg,
