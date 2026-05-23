@@ -128,18 +128,7 @@ tasks:
   lint:fix:
     cmds:
       - 'go fix -diff {{catLines .GO_PACKAGES}}'
-      # The following kludge is to work around "go fix" not using a
-      # different exit status if fixes are suggested. For more
-      # information, see <https://github.com/golang/go/issues/77583>.
-      - cmd: |
-          {{ if .GO_FIX }}
-            exit 1
-          {{ end }}
-        silent: true
     desc: 'Lint Go files with "go fix"'
-    vars:
-      GO_FIX:
-        sh: 'go fix -diff {{catLines .GO_PACKAGES}}'
 
   lint:golint:
     cmds:

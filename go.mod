@@ -1,6 +1,6 @@
 module github.com/damiendart/visref
 
-go 1.26.0
+go 1.26.3
 
 require github.com/mattn/go-sqlite3 v1.14.34
 
