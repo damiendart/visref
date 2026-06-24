@@ -47,6 +47,12 @@ func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	return &Tx{tx, db.Now().UTC().Truncate(time.Second)}, nil
 }
 
+// ExecContext executes a query without returning any rows using the
+// read-write database connection.
+func (db *DB) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	return db.readWritePool.ExecContext(ctx, query, args...)
+}
+
 // Open opens reading and writing database connections and executes any
 // database migrations.
 func (db *DB) Open() (err error) {

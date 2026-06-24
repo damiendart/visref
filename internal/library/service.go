@@ -47,12 +47,9 @@ func NewService(db *sqlite.DB, mediaRoot *os.Root) *Service {
 
 // CreateItem stores a new [Item].
 func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) error {
-	u, err := uuid.NewV7()
-	if err != nil {
-		return err
-	}
+	now := s.db.Now()
 
-	tx, err := s.db.BeginTx(ctx, nil)
+	u, err := uuid.NewV7()
 	if err != nil {
 		return err
 	}
@@ -62,13 +59,13 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		return err
 	}
 
-	if err := s.mediaRoot.MkdirAll(tx.Now.Format("2006/01"), 0700); err != nil {
+	if err := s.mediaRoot.MkdirAll(now.Format("2006/01"), 0700); err != nil {
 		return err
 	}
 
 	dst, err := s.mediaRoot.Create(
 		filepath.Join(
-			tx.Now.Format("2006/01"),
+			now.Format("2006/01"),
 			fmt.Sprintf("%s%s", u.String(), ext),
 		),
 	)
@@ -81,7 +78,7 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		return err
 	}
 
-	_, err = tx.ExecContext(
+	if _, err = s.db.ExecContext(
 		ctx,
 		`INSERT INTO items (id, alternative_text, source, description, media_type, filepath, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		u,
@@ -90,28 +87,19 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		item.Description,
 		item.MediaType,
 		filepath.Join(
-			tx.Now.Format("2006/01"),
+			now.Format("2006/01"),
 			fmt.Sprintf("%s%s", u.String(), ext),
 		),
 		item.OriginalFilename,
-		(*sqlite.NullTime)(&tx.Now),
-		(*sqlite.NullTime)(&tx.Now),
-	)
-	if err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			return rollbackErr
-		}
-
+		(*sqlite.NullTime)(&now),
+		(*sqlite.NullTime)(&now),
+	); err != nil {
 		return err
 	}
 
 	item.ID = u
-	item.CreatedAt = tx.Now
-	item.UpdatedAt = tx.Now
+	item.CreatedAt = now
+	item.UpdatedAt = now
 
 	return nil
 }
@@ -172,12 +160,7 @@ func (s *Service) PatchItem(
 	source string,
 	description string,
 ) error {
-	tx, err := s.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	row := tx.QueryRowContext(
+	row := s.db.QueryRowContext(
 		ctx,
 		`
 			UPDATE items
@@ -201,14 +184,6 @@ func (s *Service) PatchItem(
 		&item.Description,
 		(*sqlite.NullTime)(&item.UpdatedAt),
 	); err != nil {
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			return rollbackErr
-		}
-
 		return err
 	}
 
