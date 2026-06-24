@@ -105,7 +105,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			AlternativeText:  form.AlternativeText,
 			Source:           form.Source,
 			Description:      form.Description,
-			MimeType:         mediaType,
+			MediaType:        mediaType,
 			OriginalFilename: header.Filename,
 		}
 

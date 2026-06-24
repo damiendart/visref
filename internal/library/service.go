@@ -25,7 +25,7 @@ type Item struct {
 	AlternativeText  string
 	Source           string
 	Description      string
-	MimeType         string
+	MediaType        string
 	Filepath         string
 	OriginalFilename string
 	CreatedAt        time.Time
@@ -57,7 +57,7 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		return err
 	}
 
-	ext, err := getExtensionByMediaType(item.MimeType)
+	ext, err := getExtensionByMediaType(item.MediaType)
 	if err != nil {
 		return err
 	}
@@ -83,12 +83,12 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 
 	_, err = tx.ExecContext(
 		ctx,
-		`INSERT INTO items (id, alternative_text, source, description, mime_type, filepath, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO items (id, alternative_text, source, description, media_type, filepath, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		u,
 		item.AlternativeText,
 		item.Source,
 		item.Description,
-		item.MimeType,
+		item.MediaType,
 		filepath.Join(
 			tx.Now.Format("2006/01"),
 			fmt.Sprintf("%s%s", u.String(), ext),
@@ -125,7 +125,7 @@ func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) 
 			alternative_text,
 			source,
 			description,
-			mime_type,
+			media_type,
 			filepath,
 			original_filename,
 			created_at,
@@ -142,7 +142,7 @@ func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) 
 		&item.AlternativeText,
 		&item.Source,
 		&item.Description,
-		&item.MimeType,
+		&item.MediaType,
 		&item.Filepath,
 		&item.OriginalFilename,
 		(*sqlite.NullTime)(&item.CreatedAt),
@@ -224,12 +224,12 @@ func IsAcceptedMediaType(mediaType string) bool {
 }
 
 func getExtensionByMediaType(mediaType string) (string, error) {
-	mimetype, _, err := mime.ParseMediaType(mediaType)
+	m, _, err := mime.ParseMediaType(mediaType)
 	if err != nil {
 		return "", err
 	}
 
-	switch mimetype {
+	switch m {
 	case "image/jpeg":
 		return ".jpg", nil
 	case "image/png":
