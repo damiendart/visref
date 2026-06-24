@@ -81,9 +81,10 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			return app.withError("itemsAddPost: %w", err)
 		}
 
-		filetype := http.DetectContentType(buf)
+		mediaType := http.DetectContentType(buf)
+
 		form.Validator.Check(
-			filetype == "image/jpeg" || filetype == "image/png",
+			library.IsAcceptedMediaType(mediaType),
 			"media",
 			"The media file must be a supported file type",
 		)
@@ -104,7 +105,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			AlternativeText:  form.AlternativeText,
 			Source:           form.Source,
 			Description:      form.Description,
-			MimeType:         filetype,
+			MimeType:         mediaType,
 			OriginalFilename: header.Filename,
 		}
 

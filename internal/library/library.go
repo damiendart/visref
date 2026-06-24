@@ -6,6 +6,7 @@ package library
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -56,14 +57,9 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		return err
 	}
 
-	ext, err := mime.ExtensionsByType(item.MimeType)
+	ext, err := getExtensionByMediaType(item.MimeType)
 	if err != nil {
 		return err
-	}
-
-	// TODO: Document this weird behaviour.
-	if ext[0] == ".jpe" {
-		ext[0] = ".jpg"
 	}
 
 	if err := s.mediaRoot.MkdirAll(tx.Now.Format("2006/01"), 0700); err != nil {
@@ -73,7 +69,7 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 	dst, err := s.mediaRoot.Create(
 		filepath.Join(
 			tx.Now.Format("2006/01"),
-			fmt.Sprintf("%s%s", u.String(), ext[0]),
+			fmt.Sprintf("%s%s", u.String(), ext),
 		),
 	)
 	if err != nil {
@@ -95,7 +91,7 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		item.MimeType,
 		filepath.Join(
 			tx.Now.Format("2006/01"),
-			fmt.Sprintf("%s%s", u.String(), ext[0]),
+			fmt.Sprintf("%s%s", u.String(), ext),
 		),
 		item.OriginalFilename,
 		(*sqlite.NullTime)(&tx.Now),
@@ -217,4 +213,28 @@ func (s *Service) PatchItem(
 	}
 
 	return nil
+}
+
+// IsAcceptedMediaType reports whether the given media type is accepted
+// by the visual reference library.
+func IsAcceptedMediaType(mediaType string) bool {
+	_, err := getExtensionByMediaType(mediaType)
+
+	return err == nil
+}
+
+func getExtensionByMediaType(mediaType string) (string, error) {
+	mimetype, _, err := mime.ParseMediaType(mediaType)
+	if err != nil {
+		return "", err
+	}
+
+	switch mimetype {
+	case "image/jpeg":
+		return ".jpg", nil
+	case "image/png":
+		return ".png", nil
+	}
+
+	return "", errors.New("media type not supported")
 }
