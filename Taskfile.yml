@@ -51,6 +51,14 @@ tasks:
       - 'while sleep 0.1; do find cmd/ internal/ | entr -d task build && break; done'
     desc: 'Runs entr to execute the "build" task on file changes'
 
+  build:assets:
+    cmds:
+      - 'cp -v node_modules/remixicon/icons/Media/image-add-fill.svg cmd/visref/resources/assets/icon-image-add.svg'
+      - 'cp -v node_modules/remixicon/icons/Media/image-download-fill.svg cmd/visref/resources/assets/icon-image-download.svg'
+    desc: 'Copy pre-built assets'
+    sources:
+      - 'node_modules/remixicon/icons/**/*'
+
   build:css:
     cmds:
       - 'node_modules/.bin/sass --no-source-map {{ .INPUT_ENTRYPOINT }} {{ .OUTPUT_FILE }}'
@@ -76,6 +84,7 @@ tasks:
     cmds:
       - 'go build ./cmd/visref'
     deps:
+      - 'build:assets'
       - 'build:css'
       - 'build:javascript'
     desc: 'Build the "visref" application'

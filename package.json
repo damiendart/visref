@@ -2,6 +2,7 @@
   "dependencies": {
     "esbuild": "^0.19.6",
     "lightningcss-cli": "^1.22.1",
+    "remixicon": "^4.9.1",
     "sass": "^1.69.5"
   }
 }

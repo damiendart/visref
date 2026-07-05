@@ -13,7 +13,7 @@
 {{ define "main" }}
   <div class="u-cluster u-content__wide u-stack__1.5">
     <h1>Edit Library Item</h1>
-    <a class="button button--condensed u-margin-left-auto" download="{{ .Item.OriginalFilename }}" href="/items/{{ .Item.ID }}?download=1">Download original</a>
+    <a class="button button--condensed u-margin-left-auto u-with-icon u-with-icon--download-image" download="{{ .Item.OriginalFilename }}" href="/items/{{ .Item.ID }}?download=1">Download original</a>
   </div>
 
   <form action="/items/{{ .Item.ID }}" class="u-content u-stack" method="post" novalidate>

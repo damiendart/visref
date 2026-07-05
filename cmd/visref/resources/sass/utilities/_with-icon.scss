@@ -1,0 +1,35 @@
+// Copyright (C) Damien Dart, <damiendart@pobox.com>.
+// This file is distributed under the MIT licence. For more information,
+// please refer to the accompanying "LICENCE" file.
+
+@use "../functions";
+@use "../variables";
+
+.u-with-icon {
+  align-items: center;
+  display: flex;
+  gap: var(--u-with-icon-gap, #{variables.$base-line-height * 0.25});
+
+  &:not(&--after)::before,
+  &--after::after {
+    background: var(--u-with-icon-colour, currentColor);
+    content: "";
+    display: inline-block;
+    flex-shrink: 0;
+    height: var(--u-with-icon-height, 0.75lh);
+    mask-image: var(--u-with-icon-mask-image);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: var(--u-with-icon-mask-size, cover);
+    vertical-align: middle;
+    width: var(--u-with-icon-width, 0.75lh);
+  }
+
+  &--add-image {
+    --u-with-icon-mask-image: url('icon-image-add.svg');
+  }
+
+  &--download-image {
+    --u-with-icon-mask-image: url('icon-image-download.svg');
+  }
+}
