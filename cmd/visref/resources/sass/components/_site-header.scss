@@ -40,7 +40,7 @@
     grid-area: navigation;
 
     & > .u-cluster {
-      --cluster-column-gap: #{variables.$base-line-height};
+      --u-cluster-column-gap: #{variables.$base-line-height * 1.5};
 
       flex-grow: 1;
     }
