@@ -5,9 +5,16 @@
 package library
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"image"
+	// The following three packages are only imported for their side
+	// effects of adding support for decoding various image formats.
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"mime"
 	"os"
@@ -28,6 +35,8 @@ type Item struct {
 	MediaType        string
 	Filepath         string
 	OriginalFilename string
+	Width            int
+	Height           int
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }
@@ -59,6 +68,15 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		return err
 	}
 
+	var buf bytes.Buffer
+	t := io.TeeReader(file, &buf)
+
+	m, _, err := image.Decode(t)
+	if err != nil {
+		return err
+	}
+	bounds := m.Bounds()
+
 	if err := s.mediaRoot.MkdirAll(now.Format("2006/01"), 0700); err != nil {
 		return err
 	}
@@ -74,13 +92,13 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 	}
 	defer dst.Close()
 
-	if _, err = io.Copy(dst, file); err != nil {
+	if _, err = io.Copy(dst, &buf); err != nil {
 		return err
 	}
 
 	if _, err = s.db.ExecContext(
 		ctx,
-		`INSERT INTO items (id, alternative_text, source, description, media_type, filepath, original_filename, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO items (id, alternative_text, source, description, media_type, filepath, original_filename, width, height, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		u,
 		item.AlternativeText,
 		item.Source,
@@ -91,6 +109,8 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 			fmt.Sprintf("%s%s", u.String(), ext),
 		),
 		item.OriginalFilename,
+		bounds.Dx(),
+		bounds.Dy(),
 		(*sqlite.NullTime)(&now),
 		(*sqlite.NullTime)(&now),
 	); err != nil {
@@ -116,6 +136,8 @@ func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) 
 			media_type,
 			filepath,
 			original_filename,
+			width,
+			height,
 			created_at,
 			updated_at
 		FROM items
@@ -133,6 +155,8 @@ func (s *Service) GetItemByID(ctx context.Context, id uuid.UUID) (*Item, error) 
 		&item.MediaType,
 		&item.Filepath,
 		&item.OriginalFilename,
+		&item.Width,
+		&item.Height,
 		(*sqlite.NullTime)(&item.CreatedAt),
 		(*sqlite.NullTime)(&item.UpdatedAt),
 	); err != nil {

@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS items (
   media_type TEXT NOT NULL,
   filepath TEXT NOT NULL,
   original_filename TEXT NOT NULL,
+  width INTEGER,
+  height INTEGER,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 ) STRICT;
