@@ -5,7 +5,6 @@
 package library
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -68,15 +67,6 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 		return err
 	}
 
-	var buf bytes.Buffer
-	t := io.TeeReader(file, &buf)
-
-	m, _, err := image.Decode(t)
-	if err != nil {
-		return err
-	}
-	bounds := m.Bounds()
-
 	if err := s.mediaRoot.MkdirAll(now.Format("2006/01"), 0700); err != nil {
 		return err
 	}
@@ -92,7 +82,16 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 	}
 	defer dst.Close()
 
-	if _, err = io.Copy(dst, &buf); err != nil {
+	if _, err = io.Copy(dst, file); err != nil {
+		return err
+	}
+
+	if _, err = dst.Seek(0, 0); err != nil {
+		return err
+	}
+
+	config, _, err := image.DecodeConfig(dst)
+	if err != nil {
 		return err
 	}
 
@@ -109,8 +108,8 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 			fmt.Sprintf("%s%s", u.String(), ext),
 		),
 		item.OriginalFilename,
-		bounds.Dx(),
-		bounds.Dy(),
+		config.Width,
+		config.Height,
 		(*sqlite.NullTime)(&now),
 		(*sqlite.NullTime)(&now),
 	); err != nil {
