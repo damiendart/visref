@@ -20,6 +20,10 @@ import (
 	"path/filepath"
 	"time"
 
+	// The following package is only imported for the side effect of
+	// adding support for decoding WebP images.
+	_ "golang.org/x/image/webp"
+
 	"github.com/google/uuid"
 
 	"github.com/damiendart/visref/internal/sqlite"
@@ -232,6 +236,8 @@ func getExtensionByMediaType(mediaType string) (string, error) {
 		return ".jpg", nil
 	case "image/png":
 		return ".png", nil
+	case "image/webp":
+		return ".webp", nil
 	}
 
 	return "", errors.New("media type not supported")
