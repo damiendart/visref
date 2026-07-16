@@ -78,4 +78,18 @@
       margin-block-end: auto;
     }
   }
+
+  &--prose {
+    & > :where(
+      * + h3,
+      * + img,
+      img + *
+    ) {
+      --u-stack-gap-multiplier: 1;
+    }
+
+    & > :where(* + h2) {
+      --u-stack-gap-multiplier: 1.5;
+    }
+  }
 }
