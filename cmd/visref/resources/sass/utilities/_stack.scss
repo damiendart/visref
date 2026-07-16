@@ -48,6 +48,20 @@
   }
 
   & > :where(
+    * + &__2\.5,
+    &__2\.5 + *
+  ) {
+    --u-stack-gap-multiplier: 2.5;
+  }
+
+  & > :where(
+    * + &__3,
+    &__3 + *
+  ) {
+    --u-stack-gap-multiplier: 3;
+  }
+
+  & > :where(
     * + &__0,
     &__0 + *,
     &__cozy + &__cozy

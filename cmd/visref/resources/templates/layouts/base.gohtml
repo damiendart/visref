@@ -39,11 +39,15 @@
 
     {{ template "notifications" . }}
 
-    <main class="u-content u-stack u-stack__1.5" id="content">
+    <main class="u-content u-stack u-stack__2.5" id="content">
       {{ template "main" . }}
     </main>
 
-    <script src="/assets/app.js" type="module"></script>
+    <footer class="site-footer u-content u-stack__2.5 u-text-centered">
+      <p>This has been visref <span class="u-text-monospace">{{ VersionSummary }}</span>.</p>
+    </footer>
+
+    <script class="u-stack__0" src="/assets/app.js" type="module"></script>
   </body>
   </html>
 {{ end }}

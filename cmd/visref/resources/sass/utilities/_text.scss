@@ -6,6 +6,18 @@
 @use "../variables";
 
 .u-text {
+  &-centered {
+    text-align: center;
+  }
+
+  &-monospace {
+    // Prevent browsers from displaying the generic monospace font at
+    // a smaller size when the font stack consists of a single value.
+    // See <https://github.com/necolas/normalize.css/issues/519> and
+    // <https://github.com/parcel-bundler/lightningcss/issues/1221>.
+    font-family: monospace, _;
+  }
+
   &-size-md {
     font-size: 112.5%;
     line-height: variables.$base-line-height * 1.125;

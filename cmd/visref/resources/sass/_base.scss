@@ -31,6 +31,9 @@
   --outline-colour: currentColor;
   --shadow-colour: #{variables.$colour-base-black};
 
+  --site-footer-background-colour: #{variables.$colour-base-white};
+  --site-footer-foreground-colour: inherit;
+
   --site-header-background-colour: #{variables.$colour-base-white};
   --site-header-foreground-colour: inherit;
 }
@@ -80,6 +83,10 @@ body {
   height: 100%;
   line-height: variables.$base-line-height;
   margin: 0;
+}
+
+code {
+  @extend .u-text-monospace;
 }
 
 h1, h2, h3 {

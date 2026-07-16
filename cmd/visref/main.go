@@ -17,6 +17,7 @@ import (
 	"github.com/damiendart/visref/cmd/visref/resources"
 	"github.com/damiendart/visref/internal/library"
 	"github.com/damiendart/visref/internal/sqlite"
+	"github.com/damiendart/visref/internal/version"
 )
 
 type application struct {
@@ -33,7 +34,6 @@ type config struct {
 }
 
 var cfg config
-var version string
 
 func init() {
 	var printVersion bool
@@ -43,18 +43,10 @@ func init() {
 	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
 	flag.BoolVar(&printVersion, "version", false, "print application version and exit")
 
-	buildInfo, _ := debug.ReadBuildInfo()
-
-	if buildInfo.Main.Version != "" {
-		version = buildInfo.Main.Version
-	} else {
-		version = "unknown"
-	}
-
 	flag.Parse()
 
 	if printVersion {
-		fmt.Println(version)
+		fmt.Println(version.Summary())
 		os.Exit(0)
 	}
 }
@@ -130,7 +122,7 @@ func run(logger *slog.Logger) error {
 		"starting application",
 		slog.GroupAttrs(
 			"application",
-			slog.String("version", version),
+			slog.String("version", version.Summary()),
 			slog.String("data_dir", dataDir),
 		),
 	)

@@ -9,6 +9,8 @@ import (
 	"html/template"
 	"io/fs"
 	"path/filepath"
+
+	"github.com/damiendart/visref/internal/version"
 )
 
 // Resources is an embedded collection of frontend assets and templates.
@@ -33,7 +35,12 @@ func NewTemplateCache() (TemplateCache, error) {
 
 		patterns := []string{"templates/layouts/*.gohtml", t}
 
-		ts, err := template.New(name).ParseFS(Resources, patterns...)
+		ts, err := template.
+			New(name).
+			Funcs(template.FuncMap{
+				"VersionSummary": version.Summary,
+			}).
+			ParseFS(Resources, patterns...)
 		if err != nil {
 			return nil, err
 		}
