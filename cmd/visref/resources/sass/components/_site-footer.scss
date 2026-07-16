@@ -10,7 +10,7 @@
 .site-footer {
   background: var(--site-footer-background-colour);
   color: var(--site-footer-foreground-colour);
-  padding: variables.$base-line-height (variables.$base-line-height * 1.5);
+  padding: variables.$base-line-height var(--page-gutter);
 
   :where(a) {
     color: inherit;

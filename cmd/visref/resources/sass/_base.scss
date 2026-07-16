@@ -19,6 +19,7 @@
   --button-hover-background-colour: #{variables.$colour-indigo-9};
 
   --foreground-colour: #{variables.$colour-base-black};
+  --page-gutter: #{variables.$base-line-height};
 
   --form-input-background-colour: #{variables.$colour-base-white};
   --form-input-error-foreground-colour: #{variables.$colour-red-9};
@@ -36,6 +37,10 @@
 
   --site-header-background-colour: #{variables.$colour-base-white};
   --site-header-foreground-colour: inherit;
+
+  @include mixins.breakpoint-up(medium) {
+    --page-gutter: #{variables.$base-line-height * 1.5};
+  }
 }
 
 a {

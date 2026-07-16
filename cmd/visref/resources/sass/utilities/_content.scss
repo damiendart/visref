@@ -7,7 +7,6 @@
 @use "../variables";
 
 .u-content {
-  $gutter: variables.$base-line-height;
   $width-normal: functions.px-to-rem(map.get(variables.$content-widths, normal));
   $width-wide: functions.px-to-rem(map.get(variables.$content-widths, wide));
 
@@ -15,11 +14,11 @@
   grid-column: full-width;
   grid-template-columns:
     [full-width-start]
-      minmax(#{$gutter}, 1fr)
+      minmax(var(--page-gutter), 1fr)
         [wide-content-start]
-          min(#{$width-wide}, 100% - #{$gutter * 2})
+          min(#{$width-wide}, calc(100% - (var(--page-gutter) * 2)))
         [wide-content-end]
-      minmax(#{$gutter}, 1fr)
+      minmax(var(--page-gutter), 1fr)
     [full-width-end];
   grid-template-rows: min-content;
   max-width: 100%;
@@ -38,7 +37,7 @@
 
   & > &__full-width-with-gutter {
     grid-column: full-width;
-    max-width: calc(100% - #{$gutter * 2});
+    max-width: calc(100% - (var(--page-gutter) * 2));
   }
 
   & > &__wide {
