@@ -10,6 +10,16 @@
   Edit Library Item
 {{- end }}
 
+{{ define "notifications" }}
+  {{ with .FlashMessage }}
+    <div class="u-content u-stack__1.5">
+      <message-banner aria-labelledby="flash-error" class="message-banner u-content__wide u-stack" role="alert">
+        <p>{{ . }}</p>
+      </message-banner>
+    </div>
+  {{ end }}
+{{ end }}
+
 {{ define "main" }}
   <div class="u-cluster u-content__wide u-stack__1.5">
     <h1>Edit Library Item</h1>

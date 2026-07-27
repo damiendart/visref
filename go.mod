@@ -8,3 +8,5 @@ require (
 	github.com/google/uuid v1.6.0
 	golang.org/x/image v0.44.0
 )
+
+require github.com/alexedwards/scs/v2 v2.9.0

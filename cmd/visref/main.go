@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
+	"github.com/alexedwards/scs/v2"
+
 	"github.com/damiendart/visref/cmd/visref/resources"
 	"github.com/damiendart/visref/internal/library"
 	"github.com/damiendart/visref/internal/sqlite"
@@ -24,6 +26,7 @@ type application struct {
 	config         config
 	logger         *slog.Logger
 	LibraryService *library.Service
+	sessionManager *scs.SessionManager
 	templateCache  resources.TemplateCache
 }
 
@@ -130,6 +133,7 @@ func run(logger *slog.Logger) error {
 	app := &application{
 		config:         cfg,
 		logger:         logger,
+		sessionManager: scs.New(),
 		LibraryService: library.NewService(&mainDatabase.DB, mediaRoot),
 		templateCache:  templateCache,
 	}

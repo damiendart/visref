@@ -32,8 +32,9 @@ type ItemsAddTemplateData struct {
 
 // ItemsEditTemplateData is data to be passed to "items_edit.gohtml".
 type ItemsEditTemplateData struct {
-	Item library.Item
-	Form *ItemForm
+	Item         library.Item
+	FlashMessage string
+	Form         *ItemForm
 }
 
 func (app *application) itemsAddHandler() httputil.ChainableHandler {
@@ -156,10 +157,16 @@ func (app *application) itemsPatchHandler() httputil.ChainableHandler {
 		if form.Validator.HasErrors() {
 			return app.withTemplate(
 				"items_edit.gohtml",
-				ItemsEditTemplateData{*item, &form},
+				ItemsEditTemplateData{
+					*item,
+					app.sessionManager.PopString(r.Context(), "flash"),
+					&form,
+				},
 				http.StatusUnprocessableEntity,
 			)
 		}
+
+		app.sessionManager.Put(r.Context(), "flash", "Library item updated")
 
 		return app.withRedirect(fmt.Sprintf("/items/%s", item.ID), http.StatusSeeOther)
 	}
@@ -190,6 +197,7 @@ func (app *application) itemsShowHandler() httputil.ChainableHandler {
 			"items_edit.gohtml",
 			ItemsEditTemplateData{
 				*item,
+				app.sessionManager.PopString(r.Context(), "flash"),
 				&ItemForm{
 					AlternativeText: item.AlternativeText,
 					Source:          item.Source,

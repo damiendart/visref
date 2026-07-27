@@ -5,9 +5,12 @@
 @use "../variables";
 
 .message-banner {
+  background: var(--message-banner-success-background-colour);
   border-radius: variables.$base-line-height * 0.25;
   box-sizing: border-box;
+  color: var(--message-banner-success-foreground-colour);
   display: block;
+  font-weight: bold;
   padding: variables.$base-line-height;
 
   &[hidden] {
