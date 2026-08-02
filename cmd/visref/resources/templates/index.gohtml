@@ -6,6 +6,16 @@
 
 {{ define "title" }}Home{{ end }}
 
+{{ define "notifications" }}
+  {{ with .FlashMessage }}
+    <div class="u-content u-stack__2.5">
+      <message-banner aria-labelledby="flash-error" class="message-banner u-content__wide u-stack" role="alert">
+        <p>{{ . }}</p>
+      </message-banner>
+    </div>
+  {{ end }}
+{{ end }}
+
 {{ define "main" }}
   <h1 class="u-content__full-width-with-gutter">Hello, World!</h1>
 {{ end }}

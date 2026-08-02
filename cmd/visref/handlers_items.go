@@ -7,6 +7,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"io"
 	"net/http"
 
@@ -25,20 +26,35 @@ type ItemForm struct {
 	Validator       validator.FormValidator
 }
 
+// IndexTemplateData is data to be passed to "index.gohtml".
+type IndexTemplateData struct {
+	FlashMessage template.HTML
+}
+
 // ItemsAddTemplateData is data to be passed to "items_add.gohtml".
 type ItemsAddTemplateData struct {
-	Form *ItemForm
+	FlashMessage template.HTML
+	Form         *ItemForm
 }
 
 // ItemsEditTemplateData is data to be passed to "items_edit.gohtml".
 type ItemsEditTemplateData struct {
 	Item         library.Item
-	FlashMessage string
+	FlashMessage template.HTML
 	Form         *ItemForm
 }
 
 func (app *application) itemsAddHandler() httputil.ChainableHandler {
-	return app.withTemplate("items_add.gohtml", nil, http.StatusOK)
+	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
+		return app.withTemplate(
+			"items_add.gohtml",
+			ItemsAddTemplateData{
+				template.HTML(app.sessionManager.PopString(r.Context(), "flash")),
+				&ItemForm{},
+			},
+			http.StatusOK,
+		)
+	}
 }
 
 func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
@@ -68,7 +84,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 		if form.Validator.HasErrors() {
 			return app.withTemplate(
 				"items_add.gohtml",
-				ItemsAddTemplateData{&form},
+				ItemsAddTemplateData{"", &form},
 				http.StatusUnprocessableEntity,
 			)
 		}
@@ -97,7 +113,7 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 		if form.Validator.HasErrors() {
 			return app.withTemplate(
 				"items_add.gohtml",
-				ItemsAddTemplateData{&form},
+				ItemsAddTemplateData{"", &form},
 				http.StatusUnprocessableEntity,
 			)
 		}
@@ -114,12 +130,30 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			return app.withError("%w", err)
 		}
 
+		if r.PostFormValue("another") != "" {
+			app.sessionManager.Put(
+				r.Context(),
+				"flash",
+				fmt.Sprintf(`Library item created. <a href="/items/%s">View item</a>.`, m.ID),
+			)
+
+			return app.withRedirect("/items/add", http.StatusSeeOther)
+		}
+
 		return app.withRedirect(fmt.Sprintf("/items/%s", m.ID), http.StatusSeeOther)
 	}
 }
 
 func (app *application) itemsIndexHandler() httputil.ChainableHandler {
-	return app.withTemplate("index.gohtml", nil, http.StatusOK)
+	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
+		return app.withTemplate(
+			"index.gohtml",
+			IndexTemplateData{
+				template.HTML(app.sessionManager.PopString(r.Context(), "flash")),
+			},
+			http.StatusOK,
+		)
+	}
 }
 
 func (app *application) itemsPatchHandler() httputil.ChainableHandler {
@@ -159,7 +193,7 @@ func (app *application) itemsPatchHandler() httputil.ChainableHandler {
 				"items_edit.gohtml",
 				ItemsEditTemplateData{
 					*item,
-					app.sessionManager.PopString(r.Context(), "flash"),
+					template.HTML(app.sessionManager.PopString(r.Context(), "flash")),
 					&form,
 				},
 				http.StatusUnprocessableEntity,
@@ -197,7 +231,7 @@ func (app *application) itemsShowHandler() httputil.ChainableHandler {
 			"items_edit.gohtml",
 			ItemsEditTemplateData{
 				*item,
-				app.sessionManager.PopString(r.Context(), "flash"),
+				template.HTML(app.sessionManager.PopString(r.Context(), "flash")),
 				&ItemForm{
 					AlternativeText: item.AlternativeText,
 					Source:          item.Source,

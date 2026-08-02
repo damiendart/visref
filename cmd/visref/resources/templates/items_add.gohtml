@@ -11,6 +11,14 @@
 {{- end }}
 
 {{ define "notifications" }}
+  {{ with .FlashMessage }}
+    <div class="u-content u-stack__2.5">
+      <message-banner aria-labelledby="flash-error" class="message-banner u-content__wide u-stack" role="alert">
+        <p>{{ . }}</p>
+      </message-banner>
+    </div>
+  {{ end }}
+
   {{ if .Form.Validator.HasErrors }}
     <div class="u-content u-stack__1.5">
       <message-banner aria-labelledby="flash-error" class="message-banner message-banner--error u-content__wide" role="alert">
@@ -70,8 +78,9 @@
       <textarea class="u-stack__0.25" id="description" name="description">{{ .Form.Description }}</textarea>
     </div>
 
-    <div class="u-stack__1.5">
+    <div class="u-cluster u-stack__1.5">
       <input class="button" type="submit" value="Create item">
+      <input class="button" name="another" type="submit" value="Create item and add another">
     </div>
   </form>
 {{ end }}
