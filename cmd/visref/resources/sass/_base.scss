@@ -18,6 +18,11 @@
   --button-foreground-colour: #{variables.$colour-base-white};
   --button-hover-background-colour: #{variables.$colour-indigo-9};
 
+  --button-warning-background-colour: #{variables.$colour-red-8};
+  --button-warning-border-colour: #{variables.$colour-base-black};
+  --button-warning-foreground-colour: #{variables.$colour-base-white};
+  --button-warning-hover-background-colour: #{variables.$colour-red-9};
+
   --foreground-colour: #{variables.$colour-base-black};
   --page-gutter: #{variables.$base-line-height};
 

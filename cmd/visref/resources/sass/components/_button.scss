@@ -36,4 +36,11 @@
   &--condensed {
     padding-block: variables.$base-line-height * 0.25;
   }
+
+  &--warning {
+    --button-background-colour: var(--button-warning-background-colour);
+    --button-foreground-colour: var(--button-warning-foreground-colour);
+    --button-border-colour: var(--button-warning-border-colour);
+    --button-hover-background-colour: var(--button-warning-hover-background-colour);
+  }
 }

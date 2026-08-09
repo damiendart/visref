@@ -161,6 +161,27 @@ func (app *application) itemsIndexHandler() httputil.ChainableHandler {
 	}
 }
 
+func (app *application) itemsDeleteHandler() httputil.ChainableHandler {
+	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
+		id, err := uuid.Parse(r.PathValue("id"))
+		if err != nil {
+			return app.withError("itemsDelete: %w", errNotFound)
+		}
+
+		if err = app.LibraryService.DeleteItemByID(r.Context(), id); err != nil {
+			if errors.Is(err, library.ErrNotFound) {
+				return app.withError("itemsDelete: %w", errNotFound)
+			}
+
+			return app.withError("itemsDelete: %v", err)
+		}
+
+		app.sessionManager.Put(r.Context(), "flash", "Library item deleted.")
+
+		return app.withRedirect("/", http.StatusSeeOther)
+	}
+}
+
 func (app *application) itemsPatchHandler() httputil.ChainableHandler {
 	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
 		id, err := uuid.Parse(r.PathValue("id"))

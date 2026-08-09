@@ -6,6 +6,7 @@ package library
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"image"
@@ -51,6 +52,9 @@ type Service struct {
 	db        *sqlite.DB
 	mediaRoot *os.Root
 }
+
+// ErrNotFound is returned if a library item cannot be found.
+var ErrNotFound = errors.New("item not found")
 
 // NewService returns a new [Service].
 func NewService(db *sqlite.DB, mediaRoot *os.Root) *Service {
@@ -123,6 +127,29 @@ func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) er
 	item.ID = u
 	item.CreatedAt = now
 	item.UpdatedAt = now
+
+	return nil
+}
+
+// DeleteItemByID deletes a library item.
+func (s *Service) DeleteItemByID(ctx context.Context, id uuid.UUID) error {
+	row := s.db.QueryRowContext(
+		ctx,
+		`DELETE FROM items WHERE id = ? RETURNING filepath`,
+		id.String(),
+	)
+
+	var p string
+
+	if err := row.Scan(&p); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("item %s: %w", id.String(), ErrNotFound)
+		}
+	}
+
+	if err := s.mediaRoot.Remove(p); err != nil {
+		return err
+	}
 
 	return nil
 }

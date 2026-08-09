@@ -26,7 +26,7 @@
     <a class="button button--condensed u-margin-left-auto u-with-icon u-with-icon--download-image" download="{{ .Item.OriginalFilename }}" href="/items/{{ .Item.ID }}?download=1">Download original</a>
   </div>
 
-  <form action="/items/{{ .Item.ID }}" class="u-content u-stack" method="post" novalidate>
+  <form action="/items/{{ .Item.ID }}" class="u-content u-stack u-stack__cozy" method="post" novalidate>
     <div class="u-content__wide u-stack u-stack__1.5">
       <div class="media-dropzone media-dropzone--taller">
         <img alt="{{ .Item.AlternativeText }}" height="{{ .Item.Height }}" src="/items/{{ .Item.ID }}?download=1" width="{{ .Item.Width }}">
@@ -50,8 +50,12 @@
 
     <div class="u-cluster u-stack__1.5">
       <input class="button" type="submit" value="Update item">
+      <input class="button button--warning u-margin-left-auto" form="delete-item-form" type="submit" value="Delete item">
     </div>
 
     <input name="_method" type="hidden" value="PATCH">
+  </form>
+  <form action="/items/{{ .Item.ID }}" class=u-stack__cozy id="delete-item-form" method="post" novalidate>
+    <input name="_method" type="hidden" value="DELETE">
   </form>
 {{ end }}
