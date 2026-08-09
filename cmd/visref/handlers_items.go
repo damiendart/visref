@@ -94,11 +94,16 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 		defer file.Close()
 
 		buf := make([]byte, 512)
-		if _, err = file.Read(buf); err != nil {
-			return app.withError("itemsAddPost: %w", err)
+		b, err := io.ReadFull(file, buf)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				form.Validator.AddError("media", "The media file must be non-empty")
+			} else if !errors.Is(err, io.ErrUnexpectedEOF) {
+				return app.withError("itemsAddPost: %v", err)
+			}
 		}
 
-		mediaType := http.DetectContentType(buf)
+		mediaType := http.DetectContentType(buf[:b])
 
 		form.Validator.Check(
 			library.IsAcceptedMediaType(mediaType),
