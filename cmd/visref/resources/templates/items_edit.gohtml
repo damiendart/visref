@@ -50,7 +50,13 @@
 
     <div class="u-cluster u-stack__1.5">
       <input class="button" type="submit" value="Update item">
-      <input class="button button--warning u-margin-left-auto" form="delete-item-form" type="submit" value="Delete item">
+      <input
+        class="button button--warning u-margin-left-auto"
+        data-confirm="Are you sure you want to delete this item?"
+        form="delete-item-form"
+        type="submit"
+        value="Delete item"
+      >
     </div>
 
     <input name="_method" type="hidden" value="PATCH">
