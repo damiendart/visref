@@ -20,12 +20,11 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"uuid"
 
 	// The following package is only imported for the side effect of
 	// adding support for decoding WebP images.
 	_ "golang.org/x/image/webp"
-
-	"github.com/google/uuid"
 
 	"github.com/damiendart/visref/internal/sqlite"
 )
@@ -64,11 +63,7 @@ func NewService(db *sqlite.DB, mediaRoot *os.Root) *Service {
 // CreateItem stores a new [Item].
 func (s *Service) CreateItem(ctx context.Context, item *Item, file io.Reader) error {
 	now := s.db.Now()
-
-	u, err := uuid.NewV7()
-	if err != nil {
-		return err
-	}
+	u := uuid.NewV7()
 
 	ext, err := getExtensionByMediaType(item.MediaType)
 	if err != nil {

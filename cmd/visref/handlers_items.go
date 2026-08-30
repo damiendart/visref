@@ -10,8 +10,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
-
-	"github.com/google/uuid"
+	"uuid"
 
 	"github.com/damiendart/visref/internal/httputil"
 	"github.com/damiendart/visref/internal/library"
