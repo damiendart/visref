@@ -65,6 +65,16 @@ func (app *application) itemsAddPostHandler() httputil.ChainableHandler {
 			return app.withError("itemsAddPost: %w: %w", err, errBadRequest)
 		}
 
+		// Handle instances where automatic temporary file removal is
+		// skipped due to shallow copying shenanigans. For more
+		// information, see <https://github.com/golang/go/issues/58809>
+		// and <https://github.com/golang/go/issues/74455>.
+		defer func() {
+			if r.MultipartForm != nil {
+				r.MultipartForm.RemoveAll()
+			}
+		}()
+
 		form := ItemForm{
 			AlternativeText: r.PostFormValue("alternative_text"),
 			Source:          r.PostFormValue("source"),
