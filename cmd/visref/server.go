@@ -6,9 +6,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func (app *application) serveHTTP() error {
@@ -18,15 +22,42 @@ func (app *application) serveHTTP() error {
 		Handler:  app.routes(),
 	}
 
+	shutdownError := make(chan error)
+
+	go func() {
+		quit := make(chan os.Signal, 1)
+
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+		s := <-quit
+
+		app.logger.LogAttrs(
+			context.Background(),
+			slog.LevelInfo,
+			"stopping server",
+			slog.String("addr", srv.Addr),
+			slog.String("signal", s.String()),
+		)
+
+		shutdownError <- srv.Shutdown(context.TODO())
+	}()
+
 	app.logger.LogAttrs(
-		context.TODO(),
+		context.Background(),
 		slog.LevelInfo,
 		"starting server",
-		slog.GroupAttrs(
-			"server",
-			slog.String("addr", srv.Addr),
-		),
+		slog.String("addr", srv.Addr),
 	)
 
-	return srv.ListenAndServe()
+	err := srv.ListenAndServe()
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	err = <-shutdownError
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
