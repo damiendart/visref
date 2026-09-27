@@ -22,7 +22,7 @@ func (app *application) serveHTTP() error {
 		Handler:  app.routes(),
 	}
 
-	shutdownError := make(chan error)
+	shutdownErr := make(chan error)
 
 	go func() {
 		quit := make(chan os.Signal, 1)
@@ -39,7 +39,7 @@ func (app *application) serveHTTP() error {
 			slog.String("signal", s.String()),
 		)
 
-		shutdownError <- srv.Shutdown(context.TODO())
+		shutdownErr <- srv.Shutdown(context.TODO())
 	}()
 
 	app.logger.LogAttrs(
@@ -54,7 +54,7 @@ func (app *application) serveHTTP() error {
 		return err
 	}
 
-	err = <-shutdownError
+	err = <-shutdownErr
 	if err != nil {
 		return err
 	}

@@ -18,17 +18,6 @@
   padding: variables.$base-line-height var(--page-gutter);
   position: relative;
 
-  &::after {
-    background: currentColor;
-    bottom: functions.px-to-rem(-1px);
-    content: "";
-    display: block;
-    height: functions.px-to-rem(2px);
-    left: 0;
-    position: absolute;
-    width: 100%;
-  }
-
   :where(a) {
     color: inherit;
     font-weight: bold;

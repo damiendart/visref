@@ -33,7 +33,7 @@ type application struct {
 type config struct {
 	baseURL  string
 	dataDir  string
-	httpPort int
+	httpPort uint
 }
 
 var cfg config
@@ -43,7 +43,7 @@ func init() {
 
 	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
 	flag.StringVar(&cfg.dataDir, "data-dir", "data", "path to directory for storing application data")
-	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
+	flag.UintVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
 	flag.BoolVar(&printVersion, "version", false, "print application version and exit")
 
 	flag.Parse()
