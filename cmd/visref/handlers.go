@@ -20,8 +20,10 @@ var (
 	errBadRequest = errors.New("bad request")
 )
 
-func (app *application) withContent(name string, modtime time.Time, content io.ReadSeeker) httputil.ChainableHandler {
+func (app *application) withContent(name string, modtime time.Time, content io.ReadSeekCloser) httputil.ChainableHandler {
 	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
+		defer content.Close()
+
 		http.ServeContent(w, r, name, modtime, content)
 
 		return nil

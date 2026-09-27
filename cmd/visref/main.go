@@ -109,6 +109,17 @@ func run(logger *slog.Logger) error {
 	}
 	defer mediaRoot.Close()
 
+	err = dataRoot.MkdirAll("thumbnails", 0700)
+	if err != nil {
+		return err
+	}
+
+	thumbnailsRoot, err := dataRoot.OpenRoot("thumbnails")
+	if err != nil {
+		return err
+	}
+	defer thumbnailsRoot.Close()
+
 	templateCache, err := resources.NewTemplateCache()
 	if err != nil {
 		return err
@@ -134,7 +145,7 @@ func run(logger *slog.Logger) error {
 		config:         cfg,
 		logger:         logger,
 		sessionManager: scs.New(),
-		LibraryService: library.NewService(&mainDatabase.DB, mediaRoot),
+		LibraryService: library.NewService(&mainDatabase.DB, mediaRoot, thumbnailsRoot),
 		templateCache:  templateCache,
 	}
 

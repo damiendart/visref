@@ -17,6 +17,7 @@ func (app *application) routes() http.Handler {
 	mux.UseGlobal(DefaultHeaders, app.logRequest)
 
 	mux.Handle("GET /assets/", http.FileServer(http.FS(resources.Resources)))
+	mux.Handle("GET /thumbnails/{filename}", app.itemsThumbnailHandler())
 
 	mux.Group(
 		func(m httputil.SubRouter) {

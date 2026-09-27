@@ -29,7 +29,7 @@
   <form action="/items/{{ .Item.ID }}" class="u-content u-stack u-stack__cozy" method="post" novalidate>
     <div class="u-content__wide u-stack u-stack__1.5">
       <div class="media-dropzone media-dropzone--taller">
-        <img alt="{{ .Item.AlternativeText }}" height="{{ .Item.Height }}" src="/items/{{ .Item.ID }}?download=1" width="{{ .Item.Width }}">
+        <img alt="{{ .Item.AlternativeText }}" height="{{ .Item.Height }}" src="/thumbnails/{{ .Item.ID }}--920" width="{{ .Item.Width }}">
       </div>
     </div>
 

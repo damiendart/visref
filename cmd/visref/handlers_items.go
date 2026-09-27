@@ -277,3 +277,14 @@ func (app *application) itemsShowHandler() httputil.ChainableHandler {
 		)
 	}
 }
+
+func (app *application) itemsThumbnailHandler() httputil.ChainableHandler {
+	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
+		t, d, err := app.LibraryService.GetThumbnail(r.Context(), r.PathValue("filename"))
+		if err != nil {
+			return app.withError("itemThumbnail: %w", err)
+		}
+
+		return app.withContent(r.PathValue("specs")+".jpg", d, t)
+	}
+}
