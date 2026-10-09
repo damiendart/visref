@@ -32,4 +32,8 @@
   &--download-image {
     --u-with-icon-mask-image: url('icon-image-download.svg');
   }
+
+  &--visref {
+    --u-with-icon-mask-image: url('favicon.svg');
+  }
 }

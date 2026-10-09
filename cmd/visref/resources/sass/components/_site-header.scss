@@ -36,6 +36,8 @@
   }
 
   &__title {
+    --u-with-icon-gap: #{variables.$base-line-height * 0.5};
+
     grid-area: title;
   }
 }
