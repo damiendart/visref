@@ -5,18 +5,25 @@
 @use "sass:map";
 @use "sass:math";
 @use "../functions";
+@use "../mixins";
 @use "../variables";
 
 .site-header {
   display: grid;
-  gap: variables.$base-line-height * 2;
-  grid-template-areas: "title navigation";
-  grid-template-columns: min-content 1fr;
   background: var(--site-header-background-colour);
   box-sizing: border-box;
   color: var(--site-header-foreground-colour);
+  gap: variables.$base-line-height;
+  grid-template-areas: "title" "navigation";
+  grid-template-columns: 1fr;
   padding: variables.$base-line-height var(--page-gutter);
   position: relative;
+
+  @include mixins.breakpoint-up(medium) {
+    gap: variables.$base-line-height * 2;
+    grid-template-areas: "title navigation";
+    grid-template-columns: min-content 1fr;
+  }
 
   :where(a) {
     color: inherit;

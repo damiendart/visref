@@ -6,11 +6,13 @@
 @use "../variables";
 
 .media-dropzone {
+  --media-dropzone-height: #{functions.px-to-rem(250px)};
+
   border: functions.px-to-rem(2px) solid var(--form-input-foreground-colour);
   border-radius: variables.$base-line-height * 0.25;
   box-sizing: border-box;
   background: var(--form-input-background-colour);
-  height: functions.px-to-rem(250px);
+  height: var(--media-dropzone-height);
   overflow: hidden;
   padding: variables.$base-line-height * 0.5;
   width: 100%;
@@ -21,6 +23,8 @@
 
   &:has(img:only-child, picture:only-child) {
     border: none;
+    height: 100%;
+    max-height: var(--media-dropzone-height);
     padding: 0;
 
     img {
@@ -31,6 +35,6 @@
   }
 
   &--taller {
-    height: functions.px-to-rem(500px);
+    --media-dropzone-height: #{functions.px-to-rem(500px)};
   }
 }

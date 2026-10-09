@@ -12,7 +12,7 @@
 
 {{ define "notifications" }}
   {{ with .FlashMessage }}
-    <div class="u-content u-stack__2.5">
+    <div class="u-content u-stack__1.5">
       <message-banner class="message-banner u-content__wide u-stack" role="alert">
         <p>{{ . }}</p>
       </message-banner>
@@ -78,7 +78,7 @@
       <textarea class="u-stack__0.25" id="description" name="description">{{ .Form.Description }}</textarea>
     </div>
 
-    <div class="u-cluster u-stack__1.5">
+    <div class="u-cluster u-stack__1">
       <input class="button" type="submit" value="Create item">
       <input class="button" name="another" type="submit" value="Create item and add another">
     </div>
