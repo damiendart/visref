@@ -2,11 +2,13 @@
 # This file is distributed under the MIT licence. For more information,
 # please refer to the accompanying "LICENCE" file.
 
-FROM golang:1.26.3-alpine AS build
-RUN apk add build-base git nodejs upx go-task
+ARG GOLANG_IMAGE_VERSION="1.27.0"
+
+FROM golang:${GOLANG_IMAGE_VERSION}-alpine AS build
+RUN apk add build-base git nodejs npm upx go-task
 WORKDIR /build
 COPY . .
-RUN go-task build-slim
+RUN go-task dependencies build-slim
 RUN upx -9 visref
 
 FROM alpine:latest
