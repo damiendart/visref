@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -34,20 +35,16 @@ func (app *application) withError(format string, args ...any) httputil.Chainable
 	err := fmt.Errorf(format, args...)
 
 	return func(w http.ResponseWriter, r *http.Request) httputil.ChainableHandler {
-		code := http.StatusInternalServerError
-
 		switch {
 		case errors.Is(err, errNotFound):
 			return app.withText("404 Not Found", http.StatusNotFound)
 		case errors.Is(err, errBadRequest):
 			return app.withText("400 Bad Request", http.StatusBadRequest)
-		default:
-			// TODO: Handle internal server error logging
 		}
 
-		http.Error(w, err.Error(), code)
+		addAccessLogAttrs(r.Context(), slog.String("error", err.Error()))
 
-		return nil
+		return app.withText("500 Internal Server Error", http.StatusInternalServerError)
 	}
 }
 

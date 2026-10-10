@@ -5,10 +5,27 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 )
+
+type accessLogAttrs struct {
+	mu    sync.Mutex
+	attrs []slog.Attr
+}
+
+type accessLogAttrsCtxKey struct{}
+
+func addAccessLogAttrs(ctx context.Context, attrs ...slog.Attr) {
+	if ala, ok := ctx.Value(accessLogAttrsCtxKey{}).(*accessLogAttrs); ok {
+		ala.mu.Lock()
+		ala.attrs = append(ala.attrs, attrs...)
+		ala.mu.Unlock()
+	}
+}
 
 type metricsResponseWriter struct {
 	http.ResponseWriter
@@ -55,13 +72,15 @@ func DefaultHeaders(next http.Handler) http.Handler {
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			ala := accessLogAttrs{}
+			ctx := context.WithValue(r.Context(), accessLogAttrsCtxKey{}, &ala)
 			mw := metricsResponseWriter{
 				ResponseWriter: w,
 				StatusCode:     http.StatusOK,
 			}
 
 			start := time.Now()
-			next.ServeHTTP(&mw, r)
+			next.ServeHTTP(&mw, r.WithContext(ctx))
 			duration := time.Since(start)
 
 			level := slog.LevelInfo
@@ -70,23 +89,27 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 				level = slog.LevelError
 			}
 
-			app.logger.LogAttrs(
-				r.Context(),
-				level,
-				"access",
-				slog.GroupAttrs(
-					"request",
-					slog.String("method", r.Method),
-					slog.String("path", r.URL.String()),
-					slog.String("proto", r.Proto),
-				),
-				slog.GroupAttrs(
-					"response",
-					slog.Int("status_code", mw.StatusCode),
-					slog.Duration("duration_ns", duration),
-					slog.Int("body_bytes", mw.BytesCount),
-				),
+			ala.mu.Lock()
+			attrs := append(
+				[]slog.Attr{
+					slog.GroupAttrs(
+						"request",
+						slog.String("method", r.Method),
+						slog.String("path", r.URL.String()),
+						slog.String("proto", r.Proto),
+					),
+					slog.GroupAttrs(
+						"response",
+						slog.Int("status_code", mw.StatusCode),
+						slog.Duration("duration_ns", duration),
+						slog.Int("body_bytes", mw.BytesCount),
+					),
+				},
+				ala.attrs...,
 			)
+			ala.mu.Unlock()
+
+			app.logger.LogAttrs(r.Context(), level, "access", attrs...)
 		},
 	)
 }
