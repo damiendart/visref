@@ -39,18 +39,18 @@
 
   <form action="/items/add" class="u-content u-stack" enctype="multipart/form-data" method="post" novalidate>
     <div class="form-item u-content__wide u-stack u-stack__1.5">
-      <label class="u-stack__cozy" for="media" id="media-label">Media (Required)</label>
+      <label class="u-stack__cozy" for="media">Media (Required)</label>
+
+      <p class="form-item__hint u-stack__cozy" id="media-hint">Supported file types: JPEG, PNG, and WebP; Maximum file size 10MB</p>
 
       {{ with .Form.Validator.Errors.media }}
         <p class="form-item__error-message u-stack__cozy" id="media-error"><span class="u-visually-hidden">Error: </span>{{ . }}</p>
       {{ end }}
 
-      <p class="form-item__hint u-stack__cozy" id="media-hint">Supported file types: JPEG, PNG, and WebP; Maximum file size 10MB</p>
-
       <div class="media-dropzone u-stack__0.25">
         <input
           {{ with .Form.Validator.Errors.media }}
-            aria-describedby="media-label media-error media-hint"
+            aria-describedby="media-hint media-error"
             class="is-invalid"
           {{ else }}
             aria-describedby="media-hint"
