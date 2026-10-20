@@ -106,7 +106,7 @@ tasks:
     cmds:
       - task: 'dependencies:javascript'
       - task: 'dependencies:go'
-    desc: 'Run third-party-dependency-installing-related tasks'
+    desc: 'Run dependency-installing tasks'
 
   dependencies:javascript:
     cmds:
@@ -123,7 +123,7 @@ tasks:
       - 'go install honnef.co/go/tools/cmd/staticcheck@v0.8.2'
     env:
       GOBIN: '{{.USER_WORKING_DIR}}/bin'
-    desc: 'Install Go dependencies'
+    desc: 'Install Go development dependencies'
 
   lint:
     cmds:
